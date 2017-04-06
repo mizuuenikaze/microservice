@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+	<!--/*  Each token will be replaced by their respective titles in the resulting page. */-->
+	<title layout:title-pattern="$DECORATOR_TITLE - $CONTENT_TITLE">Extension</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<script type="text/javascript" src="../resources/js/vendors.js"></script>
+	<script type="text/javascript" src="../resources/js/bundle.js"></script>
+	<script type="text/javascript" src="../resources/js/tpl.js"></script>
+</head>
+<body>
+	<!-- Bootstrap containing div -->
+    <div class="container">
+	
+	<div class="row">
+	<!--/* Standard layout can be mixed with Layout Dialect */-->	
+	<div th:replace="fragments/spaheader :: header">Common header</div>
+	</div>
+	
+	<div class="row">
+	<div layout:fragment="aside">
+		<h1>Aside content</h1>
+	</div>
+	<div layout:fragment="content">
+		<h1>Static content for prototyping purposes only</h1>
+		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+			Praesent scelerisque neque neque, ac elementum quam dignissim
+			interdum. Phasellus et placerat elit. Lorem ipsum dolor sit amet,
+			consectetur adipiscing elit. Praesent scelerisque neque neque, ac
+			elementum quam dignissim interdum. Phasellus et placerat elit.</p>
+	</div>
+	</div>
+	
+	<div class="row">
+	<div th:replace="fragments/spafooter :: footer">Common Footer</div>
+	</div>
+	
+	</div>
+	
+	<th:block layout:fragment="script">page specific javascript</th:block>
+</body>
+</html>

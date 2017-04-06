@@ -1,0 +1,103 @@
+package com.muk.services.configuration;
+
+import com.muk.services.api.ProjectConfigurator;
+
+/**
+ * 
+ * Aggregate of all properties file configurations.
+ * 
+ */
+public class ConfigurationServiceImpl implements ProjectConfigurator {
+
+	private String nearRealTimeInterval;
+	private String mediumInterval;
+	private String sftpTarget;
+	private String oauthServer;
+	private String oauthServiceClientId;
+	private String oauthTokenPath;
+	private String oauthUserInfoPath;
+	private String oauthCheckTokenPath;
+	private String salt;
+
+	@Override
+	public String getNearRealTimeInterval() {
+		return nearRealTimeInterval;
+	}
+
+	public void setNearRealTimeInterval(String nearRealTimeInterval) {
+		this.nearRealTimeInterval = nearRealTimeInterval;
+	}
+
+	@Override
+	public String getMediumInterval() {
+		return mediumInterval;
+	}
+
+	public void setMediumInterval(String mediumInterval) {
+		this.mediumInterval = mediumInterval;
+	}
+
+	@Override
+	public String getOauthServer() {
+		return oauthServer;
+	}
+
+	public void setOauthServer(String oauthServer) {
+		this.oauthServer = oauthServer;
+	}
+
+	@Override
+	public String getOauthServiceClientId() {
+		return oauthServiceClientId;
+	}
+
+	public void setOauthServiceClientId(String oauthServiceClientId) {
+		this.oauthServiceClientId = oauthServiceClientId;
+	}
+
+	@Override
+	public String getOauthTokenPath() {
+		return oauthTokenPath;
+	}
+
+	public void setOauthTokenPath(String oauthTokenPath) {
+		this.oauthTokenPath = oauthTokenPath;
+	}
+
+	@Override
+	public String getOauthUserInfoPath() {
+		return oauthUserInfoPath;
+	}
+
+	public void setOauthUserInfoPath(String oauthUserInfoPath) {
+		this.oauthUserInfoPath = oauthUserInfoPath;
+	}
+
+	@Override
+	public String getOauthCheckTokenPath() {
+		return oauthCheckTokenPath;
+	}
+
+	public void setOauthCheckTokenPath(String oauthCheckTokenPath) {
+		this.oauthCheckTokenPath = oauthCheckTokenPath;
+	}
+
+	@Override
+	public String getSalt() {
+		return salt;
+	}
+
+	public void setSalt(String salt) {
+		this.salt = salt;
+	}
+
+	@Override
+	public String getSftpTarget() {
+		return sftpTarget;
+	}
+
+	public void setSftpTarget(String sftpTarget) {
+		this.sftpTarget = sftpTarget;
+	}
+	
+}

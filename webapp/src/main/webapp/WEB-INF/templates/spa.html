@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+	layout:decorator="spalayout">
+
+<head>
+	<title>SPA</title>
+</head>
+
+<body>
+	<aside layout:fragment="aside">
+		<div><hgroup><h3>Item 1</h3><h4>sub note</h4></hgroup></div>
+		<div><hgroup><h3>Item 2</h3><h4>sub note</h4></hgroup></div>
+	</aside>
+	<section layout:fragment="content">
+		
+		<div id="spaRegion1">
+		</div>
+		<div id="spaForm1">
+		</div>
+	</section>
+	<th:block layout:fragment="script">
+		<script type="text/javascript" src=""></script>
+            <script type="text/javascript" th:src="@{../resources/js/spacore.js}"></script>
+            <script>
+                 function foo() {
+                    console.log('bar');
+                 }
+            </script>
+       </th:block>
+</body>
+</html>

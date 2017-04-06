@@ -1,0 +1,131 @@
+/*
+ * Root build configuration that 
+ * contains 3 sub projects.
+ * Primarily brings in spring and camel versions.
+
+ */
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath 'org.hidetake:gradle-ssh-plugin:1.1.3'
+	}
+}
+
+apply plugin: 'org.hidetake.ssh'
+
+tasks.withType(Pmd) {
+	reports {
+		xml.enabled = false
+		html.enabled = true
+	}
+}
+
+ext {
+	springVersion='4.3.7.RELEASE'
+	restletVersion='2.3.9'
+	camelVersion='2.18.3'
+	jacksonVersion='2.8.3'
+}
+
+def buildEnv = project.hasProperty('env') ? project.getProperty('env') : ''
+def configFile = file("$rootDir/gradle/config/buildConfig.groovy")
+def parsedConfig = new ConfigSlurper(buildEnv).parse(configFile.toURL())
+
+
+if (buildEnv == '') {
+	throw new GradleException('Required env property.')
+}
+
+allprojects {
+	apply from: "$rootDir/gradle/versioning.gradle"
+	ext.config = parsedConfig
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'eclipse'
+	apply plugin: 'pmd'
+	group = 'org.muk'
+
+	sourceCompatibility = 1.8
+	targetCompatibility = 1.8
+
+	repositories {
+		mavenCentral()
+		jcenter()
+		maven {
+			url 'http://maven.restlet.org'
+		}
+	}
+
+	dependencies {
+		compile group: 'org.springframework', name: 'spring-core', version: springVersion
+		compile group: 'org.springframework', name: 'spring-context', version: springVersion
+		compile group: 'org.springframework', name: 'spring-beans', version: springVersion
+		compile 'javax.inject:javax.inject:1'
+		compile group: 'org.apache.camel', name: 'camel', version: camelVersion
+		compile group: 'org.apache.camel', name: 'camel-spring', version: camelVersion
+
+		testCompile group: 'junit', name: 'junit', version: '4.12'
+		testCompile group: 'org.springframework', name: 'spring-test', version: springVersion
+		testCompile 'org.mockito:mockito-core:1.+'
+	}
+
+	pmd {
+		ignoreFailures = true
+	}
+}
+
+
+project(':services') {
+	dependencies {
+		compile project(':core')
+	}
+
+	task buildProperties(dependsOn: ['buildRoutes'])
+
+	task buildRoutes(type: PropertyBuilderTask) {
+		propertyRoot = config.properties.services.route
+		fileName = 'route'
+	}
+}
+
+project(':webapp') {
+	dependencies {
+		compile project(':core'), project(':services')
+	}
+
+	task buildProperties(dependsOn: ['buildSecurity', 'buildCamel'])
+
+	task buildSecurity(type: PropertyBuilderTask) {
+		propertyRoot = config.properties.webapp.security
+		fileName = 'security'
+	}
+
+	task buildCamel(type: PropertyBuilderTask) {
+		propertyRoot = config.properties.webapp.camel
+		fileName = 'camel'
+	}
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '3.4.1'
+}
+
+
+class PropertyBuilderTask extends DefaultTask {
+	ConfigObject propertyRoot
+	String fileName
+
+	@TaskAction
+	def generateFile() {
+		def prop = propertyRoot.toProperties()
+		def propFile = new File("${project.projectDir}/src/main/resources/" + fileName + '.properties')
+		propFile.createNewFile()
+		prop.store(propFile.newWriter(), null)
+	}
+}
+

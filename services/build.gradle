@@ -1,0 +1,36 @@
+/*
+ * Services isolated from how the api hosted.
+ */
+
+archivesBaseName='com.muk.services'
+
+dependencies {
+	compile 'org.slf4j:slf4j-api:1.7.25'
+	compile 'org.slf4j:slf4j-log4j12:1.7.25'
+	compile 'log4j:log4j:1.2.17'
+	
+	compile group: 'org.restlet.jee', name: 'org.restlet', version: restletVersion
+	compile group: 'org.apache.camel', name: 'camel-restlet', version: camelVersion
+	compile group: 'org.apache.camel', name: 'camel-jackson', version: camelVersion
+	compile group: 'org.apache.camel', name: 'camel-ftp', version: camelVersion
+	compile group: 'org.apache.camel', name: 'camel-jms', version: camelVersion
+	compile group: 'org.apache.camel', name: 'camel-csv', version: camelVersion
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
+	compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
+	compile group: 'org.springframework', name: 'spring-web', version: springVersion
+	compile group: 'org.springframework', name: 'spring-context-support', version: springVersion
+	compile 'org.apache.commons:commons-io:1.3.2'
+	compile 'org.apache.activemq:activemq-camel:5.14.4'
+	compile 'org.springframework.security:spring-security-core:4.2.2.RELEASE'
+	compile 'org.ehcache:ehcache:3.3.1'
+	compile 'javax.cache:cache-api:1.0.0'
+
+	compile 'javax.servlet:javax.servlet-api:4.0.0-b05'
+}
+
+task jarSources(type:Jar) {
+	from sourceSets.main.allSource
+	classifier = 'source'
+}

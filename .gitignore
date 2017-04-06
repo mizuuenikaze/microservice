@@ -1,0 +1,14 @@
+**/.classpath
+**/.project
+**/.settings
+**/build
+**/bin
+node_modules/
+.gradle/
+activemq-data/
+
+# generated property files
+mozu_config.properties
+route.properties
+security.properties
+camel.properties

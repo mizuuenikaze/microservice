@@ -1,0 +1,1 @@
+export CATALINA_OPTS="${CATALINA_OPTS} -Dcustom.logging.root=${CATALINA_HOME}/logs"

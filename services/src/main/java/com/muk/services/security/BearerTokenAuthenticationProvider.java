@@ -1,0 +1,112 @@
+package com.muk.services.security;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsChecker;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.util.Assert;
+
+/**
+ * Authenticates a bearer token against an oauth2 service provider.
+ *
+ */
+public class BearerTokenAuthenticationProvider implements AuthenticationProvider {
+	private static final Logger logger = LoggerFactory.getLogger(BearerTokenAuthenticationProvider.class);
+
+	protected boolean hideUserNotFoundExceptions = true;
+	private final UserDetailsChecker postAuthenticationChecks = new DefaultPostAuthenticationChecks();
+
+	@Inject
+	@Qualifier("oauthUserDetailService")
+	private UserDetailsService userDetailsService;
+
+	@Override
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+		final String username = (authentication.getPrincipal() == null) ? "NONE_PROVIDED" : authentication.getName();
+
+		UserDetails user = null;
+
+		try {
+			user = retrieveUser(username);
+		} catch (final UsernameNotFoundException notFound) {
+			logger.debug("User '" + username + "' not found");
+
+			if (hideUserNotFoundExceptions) {
+				throw new BadCredentialsException("Bad credentials");
+			} else {
+				throw notFound;
+			}
+		}
+
+		Assert.notNull(user, "retrieveUser returned null - a violation of the interface contract");
+
+		postAuthenticationChecks.check(user);
+
+		final Object principalToReturn = user;
+
+		return createSuccessAuthentication(principalToReturn, authentication, user);
+	}
+
+	@Override
+	public boolean supports(Class<?> authentication) {
+		return (BearerAuthenticationToken.class.isAssignableFrom(authentication));
+	}
+
+	protected final UserDetails retrieveUser(String secondaryToken) throws AuthenticationException {
+		UserDetails loadedUser;
+
+		try {
+			loadedUser = this.getUserDetailsService().loadUserByUsername(secondaryToken);
+		} catch (final Exception repositoryProblem) {
+			throw new InternalAuthenticationServiceException(repositoryProblem.getMessage(), repositoryProblem);
+		}
+
+		if (loadedUser == null) {
+			throw new InternalAuthenticationServiceException(
+					"UserDetailsService returned null, which is an interface contract violation");
+		}
+		return loadedUser;
+	}
+
+	public UserDetailsService getUserDetailsService() {
+		return userDetailsService;
+	}
+
+	/**
+	 * @see org.springframework.security.authentication.dao.
+	 *      AbstractUserDetailsAuthenticationProvider#setHideUserNotFoundExceptions(boolean)
+	 */
+	public void setHideUserNotFoundExceptions(boolean hideUserNotFoundExceptions) {
+		this.hideUserNotFoundExceptions = hideUserNotFoundExceptions;
+	}
+
+	protected Authentication createSuccessAuthentication(Object principal, Authentication authentication,
+			UserDetails user) {
+		final BearerAuthenticationToken result = new BearerAuthenticationToken(principal, user.getAuthorities());
+		result.setDetails(authentication.getDetails());
+
+		return result;
+	}
+
+	private class DefaultPostAuthenticationChecks implements UserDetailsChecker {
+		@Override
+		public void check(UserDetails user) {
+			if (!user.isCredentialsNonExpired()) {
+				logger.debug("User account credentials have expired");
+
+				throw new CredentialsExpiredException("User credentials have expired");
+			}
+		}
+	}
+}
