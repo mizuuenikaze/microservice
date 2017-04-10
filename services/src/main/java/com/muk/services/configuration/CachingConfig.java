@@ -13,7 +13,6 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import com.muk.services.exchange.ServiceConstants;
 
@@ -26,8 +25,8 @@ public class CachingConfig extends CachingConfigurerSupport {
 		final CachingProvider provider = Caching.getCachingProvider();
 		final javax.cache.CacheManager cacheManager = provider.getCacheManager();
 
-		final CacheConfiguration<String, UserDetails> cacheConfiguration = CacheConfigurationBuilder
-				.newCacheConfigurationBuilder(String.class, UserDetails.class, ResourcePoolsBuilder.heap(10)).build();
+		final CacheConfiguration<Object, Object> cacheConfiguration = CacheConfigurationBuilder
+				.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(10)).build();
 		cacheManager.createCache(ServiceConstants.CacheNames.userCache,
 				Eh107Configuration.fromEhcacheCacheConfiguration(cacheConfiguration));
 

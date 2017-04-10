@@ -15,14 +15,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.client.RestTemplate;
 
 import com.muk.ext.security.KeystoreService;
-import com.muk.services.api.MozuConfigurationService;
 
 public class DefaultRequestInterceptor implements HttpRequestInterceptor {
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultRequestInterceptor.class);
 
-	@Inject
-	@Qualifier("mukConfigurationService")
-	private MozuConfigurationService mukCfgService;
 
 	@Inject
 	@Qualifier("generalKeystoreService")

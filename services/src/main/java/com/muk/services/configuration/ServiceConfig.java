@@ -56,7 +56,6 @@ import com.muk.services.api.CachingOauthUserDetailsService;
 import com.muk.services.api.ConfigurationService;
 import com.muk.services.api.CryptoService;
 import com.muk.services.api.CsvImportService;
-import com.muk.services.api.LogReaderService;
 import com.muk.services.api.ProjectConfigurator;
 import com.muk.services.api.QueueDemultiplexer;
 import com.muk.services.api.SecurityConfigurationService;
@@ -64,7 +63,6 @@ import com.muk.services.api.StatusHandler;
 import com.muk.services.api.builder.RestTemplateBuilder;
 import com.muk.services.api.builder.impl.RestTemplateBuilderImpl;
 import com.muk.services.commerce.CryptoServiceImpl;
-import com.muk.services.commerce.LogReaderServiceImpl;
 import com.muk.services.csv.CsvDocumentCache;
 import com.muk.services.csv.DefaultCsvDocumentCache;
 import com.muk.services.dataimport.DefaultCsvImportService;
@@ -84,10 +82,8 @@ import com.muk.services.processor.api.SettingApiGetProcessor;
 import com.muk.services.processor.api.ThingApiGetProcessor;
 import com.muk.services.security.BearerTokenUserDetailsService;
 import com.muk.services.security.EhCacheBasedTokenCache;
-import com.muk.services.strategy.HashValidatorStrategy;
 import com.muk.services.strategy.TranslationFactoryStrategy;
 import com.muk.services.strategy.TranslationStrategy;
-import com.muk.services.strategy.impl.DefaultHashValidatorStrategy;
 import com.muk.services.strategy.impl.PassThroughTranslationStrategy;
 import com.muk.services.util.BarcodeServiceImpl;
 import com.muk.services.web.client.DefaultKeepAliveStrategy;
@@ -95,18 +91,16 @@ import com.muk.services.web.client.DefaultRequestInterceptor;
 import com.muk.services.web.client.IdleConnectionMonitor;
 
 @Configuration
-@PropertySources(value = {
-		@PropertySource(value = "classpath:route.properties", ignoreResourceNotFound = true),
+@PropertySources(value = { @PropertySource(value = "classpath:route.properties", ignoreResourceNotFound = true),
 		@PropertySource(value = "classpath:security.properties", ignoreResourceNotFound = true),
-		@PropertySource(value = "file:${CATALINA_BASE}/conf/muk/route.properties", ignoreResourceNotFound = true),
-		@PropertySource(value = "file:${CATALINA_BASE}/conf/muk/security.properties", ignoreResourceNotFound = true) })
+		@PropertySource(value = "file:${CONF_BASE}/conf/muk/route.properties", ignoreResourceNotFound = true),
+		@PropertySource(value = "file:${CONF_BASE}/conf/muk/security.properties", ignoreResourceNotFound = true) })
 public class ServiceConfig {
 	@Inject
 	private Environment environment;
 
 	@Inject
 	private CacheManager cacheManager;
-
 
 	@Bean(name = { "cfgService", "securityConfigurationService" })
 	public ProjectConfigurator configurationService() {
@@ -121,7 +115,8 @@ public class ServiceConfig {
 		svc.setOauthCheckTokenPath(environment.getProperty(SecurityConfigurationService.OAUTH_CHECKTOKEN_PATH));
 		svc.setOauthTokenPath(environment.getProperty(SecurityConfigurationService.OAUTH_TOKEN_PATH));
 		svc.setOauthUserInfoPath(environment.getProperty(SecurityConfigurationService.OAUTH_USERINFO_PATH));
-		svc.setSalt(environment.getProperty(SecurityConfigurationService.OAUTH_SALT, "12343&DEFAULT**<>\\{88*)SALT?><"));
+		svc.setSalt(
+				environment.getProperty(SecurityConfigurationService.OAUTH_SALT, "12343&DEFAULT**<>\\{88*)SALT?><"));
 		return svc;
 	}
 
@@ -289,7 +284,6 @@ public class ServiceConfig {
 		return new NopProcessor();
 	}
 
-
 	@Bean(name = { "settingApiGetProcessor" })
 	public Processor settingApiGetProcessor() {
 		return new SettingApiGetProcessor();
@@ -316,11 +310,6 @@ public class ServiceConfig {
 	}
 
 	/* Strategies */
-	@Bean(name = { "hashValidatorStrategy" })
-	public HashValidatorStrategy hashValidatorStrategy() {
-		return new DefaultHashValidatorStrategy();
-	}
-
 
 	@Bean(name = { "translationFactoryStrategy" })
 	public TranslationFactoryStrategy translationFactoryStrategy() {
@@ -338,7 +327,6 @@ public class ServiceConfig {
 
 		final Set<String> postAttributeFqns = new HashSet<String>();
 		postAttributeFqns.add("tenant~option-map");
-
 
 		// purge
 		final PassThroughTranslationStrategy purgeTranslationStrategy = new PassThroughTranslationStrategy();
@@ -381,12 +369,6 @@ public class ServiceConfig {
 		keystoreService.setKeystore(Paths.get(System.getProperty("custom.application.keystore")));
 		keystoreService.setKeystorePass(System.getProperty("custom.application.keystorepass"));
 		return keystoreService;
-	}
-
-
-	@Bean(name = { "errorLogReaderService" })
-	public LogReaderService logReaderService() {
-		return new LogReaderServiceImpl();
 	}
 
 	@Bean(name = "oauthUserDetailService")

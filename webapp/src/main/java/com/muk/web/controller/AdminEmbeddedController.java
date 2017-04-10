@@ -4,13 +4,11 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.muk.services.api.LogReaderService;
 import com.muk.web.WebConstants;
 
 /**
@@ -25,10 +23,6 @@ public class AdminEmbeddedController {
 
 	@Inject
 	private DefaultViewController safeController;
-
-	@Inject
-	@Qualifier("errorLogReaderService")
-	private LogReaderService errorLogReaderService;
 
 	@RequestMapping(value = "/splash", method = RequestMethod.POST)
 	public String getSplash(Model model) {

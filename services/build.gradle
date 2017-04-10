@@ -1,5 +1,5 @@
 /*
- * Services isolated from how the api hosted.
+ * Services isolated from how the api is hosted.
  */
 
 archivesBaseName='com.muk.services'
@@ -21,7 +21,7 @@ dependencies {
 	compile group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: jacksonVersion
 	compile group: 'org.springframework', name: 'spring-web', version: springVersion
 	compile group: 'org.springframework', name: 'spring-context-support', version: springVersion
-	compile 'org.apache.commons:commons-io:1.3.2'
+	compile 'commons-io:commons-io:2.5'
 	compile 'org.apache.activemq:activemq-camel:5.14.4'
 	compile 'org.springframework.security:spring-security-core:4.2.2.RELEASE'
 	compile 'org.ehcache:ehcache:3.3.1'
@@ -33,4 +33,9 @@ dependencies {
 task jarSources(type:Jar) {
 	from sourceSets.main.allSource
 	classifier = 'source'
+}
+
+jar.manifest {
+	attributes ('Implementation-Title': 'MUK service layer')
+	from sharedManifest
 }

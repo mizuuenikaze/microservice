@@ -8,14 +8,14 @@ binaryRepository {
 environments {
 	fcdev {
 		server {
-			hostname = 'target.mozu.com'
+			hostname = 'target.jenkinsserver.com'
 			port = 80
-			context = 'mozuExtension'
+			context = 'verse'
 			username = 'jenkins'
 			password = 'jenkins'
 		}
 
-		keystorefile = '/var/lib/tomcat-9/conf/appkeystore.jceks'
+		keystorefile = '/usr/local/share/keystore/appkeystore.jceks'
 		keystorepass = 'cowsarecool'
 
 		properties {
@@ -31,7 +31,7 @@ environments {
 					}
 					sstack {
 						sftp {
-							target = 'file:/tmp/sstack'
+							target = 'file:/tmp/verse'
 						}
 					}
 				}
@@ -54,6 +54,9 @@ environments {
 					camel {
 						activemq {
 							dataDirectoryFile = 'activemq-data'
+						}
+						jetty {
+							httpPort = 8082
 						}
 					}
 				}

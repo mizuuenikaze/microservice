@@ -14,8 +14,6 @@ import org.apache.activemq.pool.PooledConnectionFactory;
 import org.apache.activemq.spring.ActiveMQConnectionFactory;
 import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.component.jetty.JettyHttpComponent;
-import org.apache.camel.component.jetty9.JettyHttpComponent9;
 import org.apache.camel.component.jms.JmsConfiguration;
 import org.apache.camel.component.restlet.RestletComponent;
 import org.apache.camel.osgi.SpringCamelContextFactory;
@@ -31,7 +29,7 @@ import org.springframework.osgi.context.BundleContextAware;
 
 @Configuration
 @PropertySources(value = { @PropertySource(value = "classpath:camel.properties", ignoreResourceNotFound = true),
-		@PropertySource(value = "file:${CATALINA_BASE}/conf/muk/camel.properties", ignoreResourceNotFound = true) })
+		@PropertySource(value = "file:${CONF_BASE}/conf/muk/camel.properties", ignoreResourceNotFound = true) })
 public class CamelConfig extends MultiRouteCamelConfiguration implements InitializingBean, BundleContextAware {
 
 	@Inject
@@ -108,14 +106,6 @@ public class CamelConfig extends MultiRouteCamelConfiguration implements Initial
 	@Bean(name = { "RestletComponentService" })
 	public RestletComponent restletComponentService() {
 		return new RestletComponent(restletComponent());
-	}
-
-	@Bean(name = { "jetty" })
-	public JettyHttpComponent jettyHttpComponent() {
-		final JettyHttpComponent httpServer = new JettyHttpComponent9();
-		//TODO: server setup
-
-		return httpServer;
 	}
 
 	@Bean(name = "jmsConnectionFactory")

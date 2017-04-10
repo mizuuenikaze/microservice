@@ -15,7 +15,6 @@ import com.muk.ext.core.AbstractBeanGenerator;
 import com.muk.ext.core.api.Dummy;
 import com.muk.ext.csv.CsvRecord;
 import com.muk.ext.status.Status;
-import com.muk.services.api.ApiContextLoader;
 import com.muk.services.api.CrudService;
 import com.muk.services.api.CsvImportService;
 import com.muk.services.exchange.CsvImportStatus;
@@ -27,10 +26,6 @@ import com.muk.services.exchange.CsvImportStatus;
  */
 public class DataTranslationProcessor extends AbstractInboundProcessor<CsvRecord, CsvImportStatus> {
 	private static final Pattern tenantPattern = Pattern.compile("_t(\\d+)");
-
-	@Inject
-	@Qualifier("mukContextLoader")
-	private ApiContextLoader mukContextLoader;
 
 	@Inject
 	@Qualifier("mukCsvImportService")
@@ -62,16 +57,8 @@ public class DataTranslationProcessor extends AbstractInboundProcessor<CsvRecord
 		final String csvFile = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
 		final Matcher matcher = tenantPattern.matcher(csvFile);
 		matcher.find();
-		headers.put(ApiContextLoader.X_VOL_TENANT, matcher.group(1));
-		headers.put(ApiContextLoader.X_VOL_DATAVIEW_MODE, "Live");
 
-		if (body.getRecord().get("MasterCatalogName") != null) {
-			headers.put(ApiContextLoader.X_VOL_MASTER_CATALOG, body.getRecord().get("MasterCatalogName"));
-		}
-		if (body.getRecord().get("CatalogName") != null) {
-			headers.put(ApiContextLoader.X_VOL_CATALOG, body.getRecord().get("CatalogName"));
-		}
-		mukContextLoader.storeLocalApiContext(headers);
+
 
 		try {
 			csvImportService.translateAndSave(csvFile, body.getRecord());

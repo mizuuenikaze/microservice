@@ -47,7 +47,6 @@ import org.springframework.web.filter.GenericFilterBean;
 import com.muk.ext.core.ApplicationState;
 import com.muk.ext.security.KeystoreService;
 import com.muk.ext.security.NonceService;
-import com.muk.services.api.ApiContextLoader;
 import com.muk.services.api.CryptoService;
 import com.muk.services.api.MozuConfigurationService;
 
@@ -63,7 +62,7 @@ public class HashifyingFilter extends GenericFilterBean {
 	private NonceService nonceService;
 	private UserDetailsService autoLoginUserDetailService;
 	private CryptoService cryptoService;
-	private ApiContextLoader mozuApiContextLoader;
+
 	private ApplicationState appState;
 
 	@Override
@@ -120,8 +119,7 @@ public class HashifyingFilter extends GenericFilterBean {
 			// Disable the app if we don't know about it
 			if (!appState.exists(Integer.valueOf(tenant))) {
 				final Map<String, String> headers = new HashMap<String, String>();
-				headers.put(ApiContextLoader.X_VOL_TENANT, tenant);
-				mozuApiContextLoader.storeLocalApiContext(headers);
+
 
 				try {
 
@@ -150,7 +148,7 @@ public class HashifyingFilter extends GenericFilterBean {
 			String body, HttpServletResponse response, String cookieValue) {
 		boolean authenticated = false;
 		final Map<String, String> headers = new HashMap<String, String>();
-		headers.put(ApiContextLoader.X_VOL_TENANT, tenant);
+
 
 		final Cookie mozuCookie = new Cookie("mozuToken", cookieValue);
 		mozuCookie.setMaxAge(86400);
@@ -164,7 +162,7 @@ public class HashifyingFilter extends GenericFilterBean {
 
 				if (isValidMozuAdminRequest(payloadHash, queryStringHash, queryStringDate)) {
 					autoLogin(userId);
-					mozuApiContextLoader.storeLocalApiContext(headers);
+
 
 					authenticated = true;
 				} else {
@@ -181,7 +179,7 @@ public class HashifyingFilter extends GenericFilterBean {
 
 		} else if (tenant != null && userId != null) {
 			autoLogin(userId);
-			mozuApiContextLoader.storeLocalApiContext(headers);
+
 			authenticated = true;
 		}
 
@@ -222,7 +220,7 @@ public class HashifyingFilter extends GenericFilterBean {
 			autoLoginUserDetailService = (UserDetailsService) webApplicationContext
 					.getBean("autoLoginUserDetailService");
 			cryptoService = (CryptoService) webApplicationContext.getBean("cryptoService");
-			mozuApiContextLoader = (ApiContextLoader) webApplicationContext.getBean("mozuContextLoader");
+
 
 			appState = (ApplicationState) webApplicationContext.getBean("applicationState");
 		}
@@ -303,7 +301,7 @@ public class HashifyingFilter extends GenericFilterBean {
 		private void parseRequest() throws IOException {
 			if (rawData == null) {
 
-				rawData = IOUtils.toByteArray(this.request.getReader());
+				rawData = IOUtils.toByteArray(this.request.getReader(), StandardCharsets.UTF_8);
 				servletStream.stream = new ByteArrayInputStream(rawData);
 			}
 		}

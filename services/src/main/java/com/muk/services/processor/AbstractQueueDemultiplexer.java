@@ -1,13 +1,9 @@
 package com.muk.services.processor;
 
-import javax.inject.Inject;
-
 import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.muk.services.api.ApiContextLoader;
 import com.muk.services.api.QueueDemultiplexer;
 import com.muk.services.api.model.ExtendedEvent;
 import com.muk.services.exchange.NotificationEvent;
@@ -22,16 +18,12 @@ import com.muk.services.exchange.ServiceConstants;
 public abstract class AbstractQueueDemultiplexer implements QueueDemultiplexer {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractQueueDemultiplexer.class);
 
-	@Inject
-	@Qualifier("mukContextLoader")
-	private ApiContextLoader mukApiContextLoader;
 
 	@Override
 	public void routeToQueue(Exchange exchange) {
 		String destination = "unknown";
 		final ExtendedEvent event = exchange.getIn().getBody(ExtendedEvent.class);
 
-		event.setTenantId(mukApiContextLoader.getApiContext().getTenantId());
 
 		final String[] eventSplit = event.getTenantId().split("\\.");
 

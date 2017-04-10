@@ -2,29 +2,21 @@ package com.muk.web.controller;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.inject.Inject;
-
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.muk.services.api.LogReaderService;
 import com.muk.web.WebConstants;
 
 @Controller
 @RequestMapping(value = "/ext")
 public class DefaultViewController {
 
-	@Inject
-	@Qualifier("errorLogReaderService")
-	private LogReaderService errorLogReaderService;
 
 	@RequestMapping(value = "/errorLog", method = RequestMethod.GET)
 	public String getErrors(@RequestParam(value = "dateFormat", required = false) String dateFormat,
@@ -44,11 +36,6 @@ public class DefaultViewController {
 				date = ZonedDateTime.now().minusMinutes(10l).toString();
 			}
 		}
-
-		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
-		final ZonedDateTime startingTimestamp = ZonedDateTime.parse(date, formatter);
-		errors = errorLogReaderService.readFromDate(System.getProperty("custom.logging.root") + "/error.log",
-				startingTimestamp);
 
 		model.addAttribute("logErrors", errors);
 		return WebConstants.Views.errorLog;

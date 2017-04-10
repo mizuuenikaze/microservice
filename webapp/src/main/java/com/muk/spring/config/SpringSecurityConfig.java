@@ -36,7 +36,7 @@ import com.muk.services.security.BearerTokenAuthenticationProvider;
 @Configuration
 @EnableWebSecurity
 @PropertySources(value = { @PropertySource(value = "classpath:security.properties", ignoreResourceNotFound = true),
-		@PropertySource(value = "file:${CATALINA_BASE}/conf/muk/security.properties", ignoreResourceNotFound = true) })
+		@PropertySource(value = "file:${CONF_BASE}/conf/muk/security.properties", ignoreResourceNotFound = true) })
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Inject
 	Environment environment;

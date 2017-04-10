@@ -5,6 +5,8 @@
  *
 */
 
+archivesBaseName='com.muk.core'
+
 dependencies {
 	compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
 	compile 'org.apache.commons:commons-pool2:2.4.2'
@@ -13,9 +15,13 @@ dependencies {
 	compile 'org.apache.commons:commons-lang3:3.5'
 }
 
-archivesBaseName='com.muk.core'
-
+/* source artifacts */
 task jarSources(type:Jar) {
 	from sourceSets.main.allSource
 	classifier = 'source'
+}
+
+jar.manifest {
+	attributes ('Implementation-Title': 'MUK core')
+	from sharedManifest
 }

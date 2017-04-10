@@ -16,20 +16,6 @@ buildscript {
 
 apply plugin: 'org.hidetake.ssh'
 
-tasks.withType(Pmd) {
-	reports {
-		xml.enabled = false
-		html.enabled = true
-	}
-}
-
-ext {
-	springVersion='4.3.7.RELEASE'
-	restletVersion='2.3.9'
-	camelVersion='2.18.3'
-	jacksonVersion='2.8.3'
-}
-
 def buildEnv = project.hasProperty('env') ? project.getProperty('env') : ''
 def configFile = file("$rootDir/gradle/config/buildConfig.groovy")
 def parsedConfig = new ConfigSlurper(buildEnv).parse(configFile.toURL())
@@ -41,7 +27,13 @@ if (buildEnv == '') {
 
 allprojects {
 	apply from: "$rootDir/gradle/versioning.gradle"
-	ext.config = parsedConfig
+	ext {
+		config = parsedConfig
+		springVersion='4.3.7.RELEASE'
+		restletVersion='2.3.9'
+		camelVersion='2.18.3'
+		jacksonVersion='2.8.3'
+	}
 }
 
 subprojects {
@@ -60,6 +52,11 @@ subprojects {
 			url 'http://maven.restlet.org'
 		}
 	}
+	
+	ext.sharedManifest = manifest {
+		attributes ('Created-By': 'mizuuenikaze inc.',
+		'Implementation-Version': version)
+	}
 
 	dependencies {
 		compile group: 'org.springframework', name: 'spring-core', version: springVersion
@@ -77,8 +74,18 @@ subprojects {
 	pmd {
 		ignoreFailures = true
 	}
-}
 
+	tasks.withType(Pmd) {
+		reports {
+			xml.enabled = false
+			html.enabled = true
+		}
+	}
+
+	tasks.withType(JavaCompile) {
+		options.incremental = true
+	}
+}
 
 project(':services') {
 	dependencies {
@@ -114,7 +121,6 @@ project(':webapp') {
 task wrapper(type: Wrapper) {
 	gradleVersion = '3.4.1'
 }
-
 
 class PropertyBuilderTask extends DefaultTask {
 	ConfigObject propertyRoot

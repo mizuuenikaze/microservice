@@ -6,17 +6,12 @@ buildscript {
 			url 'https://plugins.gradle.org/m2/'
 		}
 	}
-	
-	dependencies {
-		classpath 'org.akhikhl.gretty:gretty:+'
-	}
 }
 
-apply plugin: 'maven-publish'
+apply plugin: 'distribution'
 apply plugin: 'war'
-apply plugin: 'org.akhikhl.gretty'
 
-archivesBaseName='muk'
+archivesBaseName  = 'com.muk.microservices'
 ext.fullRepoUrl = "$config.binaryRepository.url/$config.binaryRepository.name"
 
 repositories {
@@ -24,19 +19,19 @@ repositories {
 }
 
 sourceSets {
-    integrationTest {
-        java {
-        	compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-        	srcDir file('src/integrationtest/java')
-        }
-        resources.srcDir file('src/integrationtest/resources')
-    }
+	integrationTest {
+		java {
+			compileClasspath += main.output + test.output
+			runtimeClasspath += main.output + test.output
+			srcDir file('src/integrationtest/java')
+		}
+		resources.srcDir file('src/integrationtest/resources')
+	}
 }
 
 configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
+	integrationTestCompile.extendsFrom testCompile
+	integrationTestRuntime.extendsFrom testRuntime
 	remoteArchive.extendsFrom runtime
 }
 
@@ -50,7 +45,6 @@ dependencies {
 	compile group: 'org.apache.camel', name: 'camel-spring-javaconfig', version: camelVersion
 	compile group: 'org.apache.camel', name: 'camel-spring-security', version: camelVersion
 	compile group: 'org.apache.camel', name: 'camel-test-spring', version: camelVersion
-	compile group: 'org.apache.camel', name: 'camel-jetty', version: camelVersion
 	compile 'org.apache.activemq:activemq-kahadb-store:5.14.4'
 	compile 'org.slf4j:slf4j-api:1.7.25'
 	compile 'org.slf4j:slf4j-log4j12:1.7.25'
@@ -61,41 +55,32 @@ dependencies {
 	compile 'org.thymeleaf:thymeleaf-spring4:2.1.4.RELEASE'
 	compile 'org.thymeleaf.extras:thymeleaf-extras-springsecurity4:2.1.2.RELEASE'
 	compile 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:1.3.0'
+	compile 'org.eclipse.jetty:jetty-webapp:9.4.3.v20170317'
+	compile 'org.eclipse.jetty:jetty-annotations:9.4.3.v20170317'
+	compile 'javax.servlet:javax.servlet-api:4.0.0-b05'
 	
 	testCompile 'commons-io:commons-io:2.5'
-	providedRuntime 'javax.servlet:javax.servlet-api:4.0.0-b05'
-
-	remoteArchive "$project.group:$project.archivesBaseName:$project.version"
-}	
-
-publishing {
-	publications {
-		webApp(MavenPublication) {
-			artifactId "$project.archivesBaseName"
-			from components.web
-		}
-	}
-
-	repositories {
-		maven {
-			url fullRepoUrl
-
-			credentials {
-				username = config.binaryRepository.username
-				password = config.binaryRepository.password
-			}
-		}
-	}
 }
 
-gretty {
-	httpPort = 8082
-	servletContainer = 'jetty9'
-	httpEnabled = true
-	managedClassReload=true
-	fastReload=true
-	contextPath='/sstack'
-	jvmArgs=['-Dcustom.logging.root=/tmp', '-Dcustom.application.keystore=' + config.keystorefile, '-Dcustom.application.keystorepass=' + config.keystorepass]
+//mainClassName = 'com.muk.app.StandAloneEntry'
+
+ext.mainClassName = 'com.muk.app.StandAloneEntry'
+ext.applicationDefaultJvmArgs = ['-Dcustom.logging.root=/tmp', '-Dcustom.application.keystore=' + config.keystorefile, '-Dcustom.application.keystorepass=' + config.keystorepass]
+
+task appRun (type: JavaExec) {
+	main = mainClassName
+	classpath = sourceSets.main.runtimeClasspath
+	jvmArgs = applicationDefaultJvmArgs
+	args = ['-hp', config.properties.webapp.camel.camel.jetty.httpPort, '-x', 'y']
+	debug = false
+}
+
+task appDebug (type: JavaExec) {
+	main = mainClassName
+	classpath = sourceSets.main.runtimeClasspath
+	jvmArgs = applicationDefaultJvmArgs
+	args = ['-hp', config.properties.webapp.camel.camel.jetty.httpPort, '-x', 'y']
+	debug = true
 }
 
 task integrationTest(type: Test) {
@@ -108,25 +93,90 @@ tasks.withType(Test) {
     reports.html.destination = file("${reporting.baseDir}/${name}")
 }
 
-task createBuildInfoFile
-createBuildInfoFile.doLast {
-	def buildInfoFile = new File("$buildDir/build-info.properties")
-	Properties props = new Properties()
-	props.setProperty('version', project.version.toString())
-	props.setProperty('timestamp', project.buildTimestamp)
-	props.store(buildInfoFile.newWriter(), null)
+war {
+	enabled = project.hasProperty('warify')
 }
 
+task warex (type: Copy) {
+	into "$buildDir/exploded"
+	with war
 
-war {
-	dependsOn createBuildInfoFile
-
-	from(buildDir) {
-		include 'build-info.properties'
-		into('WEB-INF/classes')
+	doLast {
+		ant.move(file: "$buildDir/exploded/WEB-INF/classes/com/muk/app", toFile: "$buildDir/exploded/com/muk/app")
+		ant.move(todir: "$buildDir/appLibs") {
+			fileset(dir: "$buildDir/exploded/WEB-INF/lib") {
+				patternset() {
+					include(name: '*jetty*.jar')
+				}
+				patternset() {
+					include(name: 'asm*.jar')
+				}
+				patternset() {
+					include(name: 'javax.*-api*.jar')
+				}
+			}
+		}
+		jar.manifest {
+			attributes ('Implementation-Title': 'MUK micro services')
+			from sharedManifest
+		}
+		jar.manifest.writeTo("$buildDir/exploded/META-INF/MANIFEST.MF")
 	}
 }
 
+task microsvc (type: Zip, dependsOn: warex) {
+	extension = 'jar'
+	metadataCharset = 'UTF-8'
+	destinationDir = file("$libsDir")
+	from "$buildDir/exploded"
+}
+
+/* --------- Distribution custom tasks ------------------------ */
+task createStartScripts (type: CreateStartScripts, dependsOn: microsvc) {
+	outputDir = file("$buildDir/scripts")
+	applicationName = 'muksvc'
+	mainClassName = project.ext.mainClassName
+	defaultJvmOpts = applicationDefaultJvmArgs
+	classpath = fileTree(dir: "$buildDir").matching { include 'appLibs/*.jar', "libs/$project.archivesBaseName*.jar" }
+}
+
+distributions {
+	jettydist {
+		baseName = 'jetty9'
+		contents {
+			from { "$buildDir/appLibs"}
+		}
+	}
+	muksvc {
+		baseName = 'muksvc'
+	}
+}
+
+CopySpec libChildSpec = project.copySpec();
+libChildSpec.into("lib");
+libChildSpec.from("$buildDir/libs") { include "$project.archivesBaseName*.jar" }
+
+CopySpec binChildSpec = project.copySpec();
+binChildSpec.into("bin");
+binChildSpec.from(project.createStartScripts);
+binChildSpec.setFileMode(0755);
+
+CopySpec childSpec = project.copySpec();
+childSpec.from(project.file("src/dist"));
+childSpec.with(libChildSpec);
+childSpec.with(binChildSpec);
+
+distributions.muksvc.getContents().with(childSpec);
+
+
+distTar.enabled = false
+distZip.enabled = false
+jettydistDistZip.enabled = false
+muksvcDistZip.enabled = false
+
+/* ----------- task depends ---------------*/
 check.dependsOn integrationTest
+assemble.dependsOn microsvc
 integrationTest.mustRunAfter test
+microsvc.mustRunAfter war
 

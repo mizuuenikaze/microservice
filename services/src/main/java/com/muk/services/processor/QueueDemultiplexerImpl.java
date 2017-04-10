@@ -1,12 +1,8 @@
 package com.muk.services.processor;
 
-import javax.inject.Inject;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.muk.services.api.NotificationPollService;
 import com.muk.services.api.model.ExtendedEvent;
 import com.muk.services.exchange.ServiceConstants;
 
@@ -19,9 +15,6 @@ import com.muk.services.exchange.ServiceConstants;
 public class QueueDemultiplexerImpl extends AbstractQueueDemultiplexer {
 	private static final Logger LOG = LoggerFactory.getLogger(QueueDemultiplexerImpl.class);
 
-	@Inject
-	@Qualifier("notificationPollService")
-	private NotificationPollService notificationPollService;
 
 	@Override
 	protected String determineEventDestination(String[] eventParts, ExtendedEvent event) {
@@ -40,13 +33,6 @@ public class QueueDemultiplexerImpl extends AbstractQueueDemultiplexer {
 			destination = "unknown";
 		}
 
-		if (!"unknown".equals(destination)) {
-			try {
-				notificationPollService.updateLastSuccessfulNotifcationUtc(lastNotificationTime);
-			} catch (final Exception e) {
-				LOG.error("Failed to update notification polled time", e);
-			}
-		}
 
 		return destination;
 	}
