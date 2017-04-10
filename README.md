@@ -17,7 +17,7 @@
 ### Eclipse setup ###
 
 * Build your eclipse project by executing ./gradlew cleanEclipse eclipse
-* >>> Import eclipse preferences from /eclipse at the root of the repo. <<<
+* \>\>\> Import eclipse preferences from /eclipse at the root of the repo. <<<
 * Create default vm args in your preferences --> installed JREs
 	* -D custom.logging.root=/tmp # this sets up the log file location on your file system.
 
@@ -31,7 +31,7 @@
 	* Profit...
 
 ### keystores ###
-* The gradle/config/buildConfig.groovy file has some configuration values for the location and password to a keystore that will hold sensitive values.  Primarily, this is the mozu shared secret.
+* The gradle/config/buildConfig.groovy file has some configuration values for the location and password to a keystore that will hold sensitive values.
 	* Depends on JCE, so download the correct policy files to update your jdk/jre.
 	* Must have an existing JCEKS keystore file. For example:
 		* keytool -keystore appkeystore -genkey -alias client -storetype jceks
