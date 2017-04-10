@@ -65,7 +65,6 @@ dependencies {
 //mainClassName = 'com.muk.app.StandAloneEntry'
 
 ext.mainClassName = 'com.muk.app.StandAloneEntry'
-ext.applicationDefaultJvmArgs = ['-Dcustom.logging.root=/tmp', '-Dcustom.application.keystore=' + config.keystorefile, '-Dcustom.application.keystorepass=' + config.keystorepass]
 
 task appRun (type: JavaExec) {
 	main = mainClassName

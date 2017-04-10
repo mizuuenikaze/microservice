@@ -97,7 +97,7 @@ public class StandAloneEntry {
 			jettyServer.setStopAtShutdown(true);
 
 			final WebAppContext contextHandler = new WebAppContext(null, "/proxied", null, null, null,
-					new ErrorPageErrorHandler(), ServletContextHandler.NO_SESSIONS | ServletContextHandler.NO_SECURITY);
+					new ErrorPageErrorHandler(), ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
 
 			if (isDevMode()) {
 				LOG.info("DEV MODE...running from source.");

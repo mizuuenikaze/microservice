@@ -43,6 +43,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.muk.ext.core.AbstractBeanGenerator;
 import com.muk.ext.core.ApplicationState;
 import com.muk.ext.core.ApplicationStateImpl;
+import com.muk.ext.core.api.Dummy;
 import com.muk.ext.core.json.HateoasLink;
 import com.muk.ext.core.json.RestReply;
 import com.muk.ext.core.json.model.oauth.TokenResponse;
@@ -207,6 +208,12 @@ public class ServiceConfig {
 		return new HateoasLink();
 	}
 
+	@Bean(name = { "dummyBean" })
+	@Scope("prototype")
+	public Dummy dummyBean() {
+		return new Dummy();
+	}
+
 	/* bean creators */
 
 	@Bean(name = { "processBeanGenerator" })
@@ -249,6 +256,17 @@ public class ServiceConfig {
 			@Override
 			public TokenResponse createResponse() {
 				return tokenResponse();
+			}
+		};
+	}
+
+	@Bean(name = { "dummyBeanGenerator" })
+	public AbstractBeanGenerator<Dummy> dummyBeanGenerator() {
+		return new AbstractBeanGenerator<Dummy>() {
+
+			@Override
+			public Dummy createResponse() {
+				return dummyBean();
 			}
 		};
 	}

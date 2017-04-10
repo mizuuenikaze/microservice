@@ -12,10 +12,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.muk.ext.camel.processor.AbstractInboundProcessor;
 import com.muk.ext.core.AbstractBeanGenerator;
-import com.muk.ext.core.api.Dummy;
 import com.muk.ext.csv.CsvRecord;
 import com.muk.ext.status.Status;
-import com.muk.services.api.CrudService;
 import com.muk.services.api.CsvImportService;
 import com.muk.services.exchange.CsvImportStatus;
 
@@ -31,9 +29,6 @@ public class DataTranslationProcessor extends AbstractInboundProcessor<CsvRecord
 	@Qualifier("mukCsvImportService")
 	private CsvImportService csvImportService;
 
-	@Inject
-	@Qualifier("tenantService")
-	public CrudService<Dummy> tenantService;
 
 	@Override
 	protected CsvImportStatus forceFail(Exchange exchange) {

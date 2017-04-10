@@ -1,16 +1,12 @@
 package com.muk.spring.config;
 
-import static org.apache.camel.builder.PredicateBuilder.and;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.camel.Exchange;
 import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.model.rest.RestPropertyDefinition;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
 
 import com.muk.ext.core.json.RestReply;
 import com.muk.ext.core.json.RestThing;
@@ -51,26 +47,23 @@ public class RestRouter extends SpringRouteBuilder {
 		corsHeaders.add(corsHeader);
 
 		restConfiguration().component("restlet").bindingMode(RestBindingMode.json).skipBindingOnErrorCode(false)
-		.dataFormatProperty("json.in.moduleClassNames", "com.fasterxml.jackson.datatype.joda.JodaModule")
-		.dataFormatProperty("json.out.moduleClassNames", "com.fasterxml.jackson.datatype.joda.JodaModule")
+		.dataFormatProperty("json.in.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
+		.dataFormatProperty("json.out.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
 		.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(true)
 		.setCorsHeaders(corsHeaders);
 		/*
-		rest(RestConstants.Rest.adminPath).verb("patch", "/system").type(SystemAction.class).outType(RestReply.class)
-				.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
-				.process("authPrincipalProcessor").policy("restUserPolicy").to("direct:systemConfiguration");
+		 * rest(RestConstants.Rest.adminPath).verb("patch",
+		 * "/system").type(SystemAction.class).outType(RestReply.class)
+		 * .consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.
+		 * APPLICATION_JSON.getName()).route()
+		 * .process("authPrincipalProcessor").policy("restUserPolicy").to(
+		 * "direct:systemConfiguration");
 		 */
-		// mozu notification endpoint
+		// notification endpoint
 		rest(RestConstants.Rest.notificationPath).post().bindingMode(RestBindingMode.off)
 		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
-		.routeId(CamelRouteConstants.RouteIds.asyncNotificationPush)
-		.bean("hashValidatorStrategy", "validateHash").choice()
-		.when(and(header("hashVerified").isNotNull(), header("hashVerified").isEqualTo(Boolean.TRUE)))
-		.to("direct:mozuEvent")
-		.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Status.SUCCESS_ACCEPTED.getCode())).endChoice()
-		.otherwise()
-		.setHeader(Exchange.HTTP_RESPONSE_CODE, constant(Status.CLIENT_ERROR_UNAUTHORIZED.getCode()))
-		.setHeader(Exchange.HTTP_RESPONSE_TEXT, constant(header("hashResult"))).endRest();
+		.routeId(CamelRouteConstants.RouteIds.asyncNotificationPush).process("authPrincipalProcessor")
+		.policy("restUserPolicy").to("direct:mukEvent");
 
 		// camel route intents
 		rest(RestConstants.Rest.adminPath).post("/routes/changeRouteState").type(RouteAction.class)
@@ -95,7 +88,7 @@ public class RestRouter extends SpringRouteBuilder {
 		// direct rest routes
 
 		// system actions
-		from("direct:systemConfiguration").process("systemProcessor").bean("statusHandler", "logRestStatus");
+		from("direct:systemConfiguration").process("nopProcessor").bean("statusHandler", "logRestStatus");
 
 		// camel route management
 		from("direct:routeConfiguration").process("routeActionProcessor").bean("statusHandler", "logRestStatus");

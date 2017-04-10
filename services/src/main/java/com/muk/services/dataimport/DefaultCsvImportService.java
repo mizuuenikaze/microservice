@@ -8,10 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.muk.ext.core.api.Dummy;
 import com.muk.services.api.CsvImportService;
 import com.muk.services.exchange.ServiceConstants;
-import com.muk.services.strategy.ImportStrategy;
 import com.muk.services.strategy.TranslationFactoryStrategy;
 import com.muk.services.strategy.TranslationStrategy;
 
@@ -27,16 +25,16 @@ public class DefaultCsvImportService implements CsvImportService {
 	@Qualifier("translationFactoryStrategy")
 	private TranslationFactoryStrategy translationFactoryStrategy;
 
-	@Inject
-	@Qualifier("customerAccountImportStrategy")
-	private ImportStrategy<Dummy> customerAccountImportStrategy;
+	//	@Inject
+	//	@Qualifier("customerAccountImportStrategy")
+	//	private ImportStrategy<Dummy> customerAccountImportStrategy;
 
 
 	@Override
 	public void translateAndSave(String fileName, Map<String, String> record) throws Exception {
 		switch (fileName.substring(0, fileName.indexOf("_t"))) {
 		case ServiceConstants.ImportFiles.purge:
-			customerAccountImportStrategy.importData(record, translate(ServiceConstants.ImportFiles.purge, record));
+			//customerAccountImportStrategy.importData(record, translate(ServiceConstants.ImportFiles.purge, record));
 			break;
 		default:
 			LOG.info("Unknown file to import.  " + fileName);

@@ -36,24 +36,24 @@ public class Router extends SpringRouteBuilder {
 
 		final Map<String, JacksonDataFormat> jacksonJMSFormats = new HashMap<String, JacksonDataFormat>();
 
-		jacksonJMSFormats.put("mozuEvent", new JacksonDataFormat(ExtendedEvent.class));
-		jacksonJMSFormats.get("mozuEvent").setAllowJmsType(true);
-		jacksonJMSFormats.get("mozuEvent").setModuleClassNames("com.fasterxml.jackson.datatype.joda.JodaModule");
+		jacksonJMSFormats.put("mukEvent", new JacksonDataFormat(ExtendedEvent.class));
+		jacksonJMSFormats.get("mukEvent").setAllowJmsType(true);
+		jacksonJMSFormats.get("mukEvent").setModuleClassNames("com.fasterxml.jackson.datatype.jsr310.JavaTimeModule");
 
 		jacksonJMSFormats.put("csvRecord", new JacksonDataFormat(CsvRecord.class));
 		jacksonJMSFormats.get("csvRecord").setAllowJmsType(true);
 
-		// mozu notification handling
-		from("direct:mozuEvent").bean("queueDemux", "routeToQueue")
+		// notification handling
+		from("direct:mukEvent").bean("queueDemux", "routeToQueue")
 		.idempotentConsumer(header(NotificationEvent.Keys.mukEventId),
 				ExpiringIdempotentRepository.expiringIdempotentRepository(200, 20000l))
-		.marshal(jacksonJMSFormats.get("mozuEvent")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
+		.marshal(jacksonJMSFormats.get("mukEvent")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
 
 		from("activemq:queue:unknown?asyncConsumer=false").log(LoggingLevel.DEBUG,
 				org.slf4j.LoggerFactory.getLogger("com.muk.spring.config.Router"),
 				"Unknown Event Received >>>>> ${body}");
 
-		// mozu csv handling
+		// csv handling
 		final CsvDataFormat csvFormat = new CsvDataFormat();
 		csvFormat.setLazyLoad(false);
 		csvFormat.setRecordSeparator("\n");
@@ -64,28 +64,21 @@ public class Router extends SpringRouteBuilder {
 		.split(body().tokenize("\n")).streaming().unmarshal(csvFormat).bean("csvDemux", "routeToQueue")
 		.marshal(jacksonJMSFormats.get("csvRecord")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
 
-		/*
-		 * consume from queue
-		 * from("activemq:queue:mozuOpenOrderEvent?asyncConsumer=false")
-		 * .unmarshal(jacksonDataFormat).multicast().parallelProcessing()
-		 * .to("direct:startGiftCardPurchase")
-		 * .to("direct:takeGiftCardPayment");
-		 */
 
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppInstalled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mozuEvent"))
+		.unmarshal(jacksonJMSFormats.get("mukEvent"))
 		.to("direct:" + ServiceConstants.QueueDestinations.queueAppInstalled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppUninstalled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mozuEvent"))
+		.unmarshal(jacksonJMSFormats.get("mukEvent"))
 		.to("direct:" + ServiceConstants.QueueDestinations.queueAppUninstalled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppEnabled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mozuEvent"))
+		.unmarshal(jacksonJMSFormats.get("mukEvent"))
 		.to("direct:" + ServiceConstants.QueueDestinations.queueAppEnabled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppDisabled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mozuEvent"))
+		.unmarshal(jacksonJMSFormats.get("mukEvent"))
 		.to("direct:" + ServiceConstants.QueueDestinations.queueAppDisabled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppUpgraded + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mozuEvent"))
+		.unmarshal(jacksonJMSFormats.get("mukEvent"))
 		.to("direct:" + ServiceConstants.QueueDestinations.queueAppUpgraded);
 
 		// data transformation
@@ -93,21 +86,21 @@ public class Router extends SpringRouteBuilder {
 		.unmarshal(jacksonJMSFormats.get("csvRecord"))
 		.to("direct:" + ServiceConstants.QueueDestinations.queueCsvRow);
 
-		from("direct:" + ServiceConstants.QueueDestinations.queueAppInstalled).process("applicationInstalledProcessor")
+		from("direct:" + ServiceConstants.QueueDestinations.queueAppInstalled).process("nopProcessor")
 		.bean("statusHandler", "logProcessStatus");
-		from("direct:" + ServiceConstants.QueueDestinations.queueAppUninstalled)
-		.process("applicationUninstalledProcessor").bean("statusHandler", "logProcessStatus");
-		from("direct:" + ServiceConstants.QueueDestinations.queueAppEnabled).process("applicationEnabledProcessor")
+		from("direct:" + ServiceConstants.QueueDestinations.queueAppUninstalled).process("nopProcessor")
 		.bean("statusHandler", "logProcessStatus");
-		from("direct:" + ServiceConstants.QueueDestinations.queueAppDisabled).process("applicationDisabledProcessor")
+		from("direct:" + ServiceConstants.QueueDestinations.queueAppEnabled).process("nopProcessor")
 		.bean("statusHandler", "logProcessStatus");
-		from("direct:" + ServiceConstants.QueueDestinations.queueAppUpgraded).process("applicationUpgradedProcessor")
+		from("direct:" + ServiceConstants.QueueDestinations.queueAppDisabled).process("nopProcessor")
+		.bean("statusHandler", "logProcessStatus");
+		from("direct:" + ServiceConstants.QueueDestinations.queueAppUpgraded).process("nopProcessor")
 		.bean("statusHandler", "logProcessStatus");
 
 		// data transformation
 		from("direct:" + ServiceConstants.QueueDestinations.queueCsvRow).process("dataTranslationProcessor")
 		.bean("statusHandler", "logProcessStatus").choice().when()
-		.simple("${body.status} == ${type:com.mozu.ext.status.Status.ERROR}").transform()
+		.simple("${body.status} == ${type:com.muk.ext.status.Status.ERROR}").transform()
 		.simple("${body.record}").marshal(csvFormat)
 		.toF("%s?fileName=processErrors.log&fileExist=Append", configurationService.getSftpTarget());
 
@@ -121,7 +114,7 @@ public class Router extends SpringRouteBuilder {
 
 		// potentially poll for notifications every 3 minutes
 		fromF("timer://notificationPollTimer?fixedRate=false&period=3m").noAutoStartup()
-		.routeId(CamelRouteConstants.RouteIds.notificationPoll).process("notificationClientProcessor")
-		.split(body()).to("direct:mozuEvent").end();
+		.routeId(CamelRouteConstants.RouteIds.notificationPoll).process("nopProcessor")
+		.split(body()).to("direct:mukEvent").end();
 	}
 }

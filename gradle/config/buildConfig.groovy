@@ -21,15 +21,13 @@ environments {
 		properties {
 			services {
 				route {
-					mozu {
+					muk {
 						nrt{
 							interval = '10s'
 						}
 						medium {
 							interval = '60m'
 						}
-					}
-					sstack {
 						sftp {
 							target = 'file:/tmp/verse'
 						}

@@ -32,7 +32,8 @@ allprojects {
 		springVersion='4.3.7.RELEASE'
 		restletVersion='2.3.9'
 		camelVersion='2.18.3'
-		jacksonVersion='2.8.3'
+		jacksonVersion='2.9.0.pr2'
+		applicationDefaultJvmArgs = ['-Dcustom.logging.root=/tmp', '-Dcustom.application.keystore=' + parsedConfig.keystorefile, '-Dcustom.application.keystorepass=' + parsedConfig.keystorepass]
 	}
 }
 
@@ -84,6 +85,12 @@ subprojects {
 
 	tasks.withType(JavaCompile) {
 		options.incremental = true
+	}
+
+	test {
+		systemProperty applicationDefaultJvmArgs[0].tokenize('=')[0].substring(2), applicationDefaultJvmArgs[0].tokenize('=')[1]
+		systemProperty applicationDefaultJvmArgs[1].tokenize('=')[0].substring(2), applicationDefaultJvmArgs[1].tokenize('=')[1]
+		systemProperty applicationDefaultJvmArgs[2].tokenize('=')[0].substring(2), applicationDefaultJvmArgs[2].tokenize('=')[1]
 	}
 }
 

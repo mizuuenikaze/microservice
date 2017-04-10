@@ -45,7 +45,7 @@ public class SettingApiGetProcessor extends AbstractProcessor<Object, Dummy> {
 	}
 
 	@Inject
-	@Qualifier("mukSettingBeanGenerator")
+	@Qualifier("dummyBeanGenerator")
 	@Override
 	public void setBeanGenerator(AbstractBeanGenerator<Dummy> beanGenerator) {
 		super.setBeanGenerator(beanGenerator);
