@@ -95,6 +95,7 @@ import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
 import com.muk.services.processor.TokenLoginProcessor;
 import com.muk.services.processor.api.CommentApiProcessor;
+import com.muk.services.processor.api.PingApiProcessor;
 import com.muk.services.processor.api.SettingApiGetProcessor;
 import com.muk.services.processor.api.ThingApiGetProcessor;
 import com.muk.services.security.BearerTokenUserDetailsService;
@@ -206,12 +207,6 @@ public class ServiceConfig {
 		return new CsvImportStatus();
 	}
 
-	@Bean(name = { "restReply" })
-	@Scope("prototype")
-	public RestReply restReply() {
-		return new RestReply();
-	}
-
 	@Bean(name = { "tokenResponse" })
 	@Scope("prototype")
 	public TokenResponse tokenResponse() {
@@ -222,12 +217,6 @@ public class ServiceConfig {
 	@Scope("prototype")
 	public HateoasLink hateoasLink() {
 		return new HateoasLink();
-	}
-
-	@Bean(name = { "dummyBean" })
-	@Scope("prototype")
-	public Dummy dummyBean() {
-		return new Dummy();
 	}
 
 	/* bean creators */
@@ -260,7 +249,7 @@ public class ServiceConfig {
 
 			@Override
 			public RestReply createResponse() {
-				return restReply();
+				return new RestReply();
 			}
 		};
 	}
@@ -282,7 +271,7 @@ public class ServiceConfig {
 
 			@Override
 			public Dummy createResponse() {
-				return dummyBean();
+				return new Dummy();
 			}
 		};
 	}
@@ -341,6 +330,11 @@ public class ServiceConfig {
 	@Bean(name = { "dataTranslationProcessor" })
 	public Processor dataTranslationProcessor() {
 		return new DataTranslationProcessor();
+	}
+
+	@Bean(name = { "pingApiProcessor" })
+	public Processor pingApiProcessor() {
+		return new PingApiProcessor();
 	}
 
 	/* Strategies */
@@ -533,8 +527,9 @@ public class ServiceConfig {
 		reqConfig.setConnectionRequestTimeout(20000);
 		reqConfig.setSocketTimeout(10000);
 		reqConfig.setCircularRedirectsAllowed(false);
+		reqConfig.setRedirectsEnabled(false);
 
-		final HttpClientBuilder builder = HttpClientBuilder.create().setConnectionManager(manager)
+		final HttpClientBuilder builder = HttpClientBuilder.create().disableRedirectHandling().setConnectionManager(manager)
 				.setDefaultRequestConfig(reqConfig.build());
 
 		staleConnectionExecutor().execute(new IdleConnectionMonitor(manager));

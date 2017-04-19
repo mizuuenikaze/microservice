@@ -27,20 +27,20 @@ public class OauthUser extends User {
 	private static final long serialVersionUID = ProjectCoreVersion.SERIAL_VERSION_UID;
 
 	private String refreshToken;
-	private final String openIdToken;
 	private String secondaryToken;
+	private String redirectUri;
 
 	public OauthUser(String username, String password, Collection<? extends GrantedAuthority> authorities,
-			String refreshToken, String openIdToken) {
-		this(username, password, true, true, true, true, authorities, refreshToken, openIdToken);
+			String refreshToken, String redirectUri) {
+		this(username, password, true, true, true, true, authorities, refreshToken, redirectUri);
 	}
 
 	public OauthUser(String username, String password, boolean enabled, boolean accountNonExpired,
 			boolean credentialsNonExpired, boolean accountNonLocked, Collection<? extends GrantedAuthority> authorities,
-			String refreshToken, String openIdToken) {
+			String refreshToken, String redirectUri) {
 		super(username, password, enabled, accountNonExpired, credentialsNonExpired, accountNonLocked, authorities);
 		this.refreshToken = refreshToken;
-		this.openIdToken = openIdToken;
+		this.redirectUri = redirectUri;
 	}
 
 	public String getRefreshToken() {
@@ -51,15 +51,19 @@ public class OauthUser extends User {
 		this.refreshToken = refreshToken;
 	}
 
-	public String getOpenIdToken() {
-		return openIdToken;
-	}
-
 	public String getSecondaryToken() {
 		return secondaryToken;
 	}
 
 	public void setSecondaryToken(String secondaryToken) {
 		this.secondaryToken = secondaryToken;
+	}
+
+	public String getRedirectUri() {
+		return redirectUri;
+	}
+
+	public void setRedirectUri(String redirectUri) {
+		this.redirectUri = redirectUri;
 	}
 }

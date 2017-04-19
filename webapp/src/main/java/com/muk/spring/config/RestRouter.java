@@ -65,7 +65,7 @@ public class RestRouter extends SpringRouteBuilder {
 		restConfiguration().component("restlet").bindingMode(RestBindingMode.json).skipBindingOnErrorCode(false)
 		.dataFormatProperty("json.in.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
 		.dataFormatProperty("json.out.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
-		.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(true)
+		.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(false)
 		.setCorsHeaders(corsHeaders);
 		/*
 		 * rest(RestConstants.Rest.adminPath).verb("patch",
@@ -88,11 +88,15 @@ public class RestRouter extends SpringRouteBuilder {
 		.policy("restUserPolicy").to("direct:routeConfiguration");
 
 		// oauth2 token users
-		rest(RestConstants.Rest.adminPath).get("/tokenLogin/{authorizationCode}").outType(RestReply.class)
+		rest(RestConstants.Rest.adminPath).get("/tokenLogin").outType(RestReply.class)
 		.produces(MediaType.APPLICATION_JSON.getName()).route().process("tokenLoginProcessor")
 		.bean("statusHandler", "logRestStatus");
 
 		// api
+		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class)
+		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
+		.policy("restUserPolicy").to("direct:ping");
+
 		rest(RestConstants.Rest.apiPath).get("/thing/{id}").outType(RestThing.class)
 		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
 		.policy("restUserPolicy").to("direct:thingGetApi");
@@ -113,5 +117,6 @@ public class RestRouter extends SpringRouteBuilder {
 		from("direct:settingGetApi").process("settingApiGetProcessor").bean("statusHandler", "logRestStatus");
 		from("direct:thingGetApi").process("thingApiGetProcessor").bean("statusHandler", "logRestStatus");
 		from("direct:commentApi").process("commentApiProcessor").bean("statusHandler", "logRestStatus");
+		from("direct:ping").process("pingApiProcessor").bean("statusHandler", "logRestStatus");
 	}
 }

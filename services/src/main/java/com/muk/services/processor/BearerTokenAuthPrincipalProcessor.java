@@ -40,7 +40,7 @@ public class BearerTokenAuthPrincipalProcessor implements Processor {
 		String bearerToken = "badToken";
 		for (final Header header : httpHeaders) {
 			if (header.getName().toLowerCase().equals(HttpHeaders.AUTHORIZATION.toLowerCase())) {
-				bearerToken = StringUtils.substringAfter(header.getValue(), "Bearer: ");
+				bearerToken = StringUtils.substringAfter(header.getValue(), "Bearer ");
 				break;
 			}
 		}

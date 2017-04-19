@@ -33,8 +33,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -45,6 +47,8 @@ import org.springframework.security.core.userdetails.cache.NullUserCache;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -95,45 +99,70 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 	}
 
 	@Override
-	public TokenResponse loadByAuthorizationCode(String authorizationCode) {
+	public TokenResponse loadByAuthorizationCode(String authorizationCode, String redirectUri) {
 		// request bearer token
 		final URI authUrl = UriComponentsBuilder.fromUriString(securityCfgService.getOauthServer())
-				.path(securityCfgService.getOauthTokenPath()).queryParam("response_type", "token")
-				.queryParam("grant_type", "authorization_code").queryParam("code", authorizationCode).build().toUri();
+				.path(securityCfgService.getOauthTokenPath()).build().toUri();
 
 		final URI userInfoUrl = UriComponentsBuilder.fromUriString(securityCfgService.getOauthServer())
 				.path(securityCfgService.getOauthUserInfoPath()).build().toUri();
 
 		ResponseEntity<TokenResponse> response = null;
 
+		final MultiValueMap<String, String> postBody = new LinkedMultiValueMap<String, String>();
+		postBody.put("response_type", Collections.singletonList("token"));
+		postBody.put("grant_type", Collections.singletonList("authorization_code"));
+		postBody.put("code", Collections.singletonList(authorizationCode));
+		postBody.put("redirect_uri", Collections.singletonList(redirectUri));
+
 		try {
-			response = restTemplate.exchange(authUrl, HttpMethod.GET,
-					buildAuthRequest("Basic",
-							securityCfgService.getOauthServiceClientId() + ":"
-									+ keystoreService.getPBEKey(securityCfgService.getOauthServiceClientId())),
-					TokenResponse.class);
+			response = restTemplate.exchange(authUrl, HttpMethod.POST, buildAuthRequest("Basic",
+					securityCfgService.getOauthServiceClientId() + ":"
+							+ keystoreService.getPBEKey(securityCfgService.getOauthServiceClientId()),
+							postBody), TokenResponse.class);
 		} catch (final IOException ioEx) {
 			LOG.error("Failed to get oauth client secret.", ioEx);
 			response = new ResponseEntity<TokenResponse>(new TokenResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (final GeneralSecurityException secEx) {
 			LOG.error("Failed to read client secret from keystore.", secEx);
 			response = new ResponseEntity<TokenResponse>(new TokenResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (final HttpClientErrorException httpEx) {
+			response = new ResponseEntity<TokenResponse>(new TokenResponse(), httpEx.getStatusCode());
+
+			if (httpEx instanceof HttpStatusCodeException) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Status Code: {}", httpEx.getStatusCode().value());
+					LOG.debug("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
+				}
+			}
 		}
 
 		if (!HttpStatus.OK.equals(response.getStatusCode())) {
 			response.getBody()
-					.setMessage("Failed to request access token. " + response.getStatusCode().getReasonPhrase());
+			.setMessage("Failed to request access token. " + response.getStatusCode().getReasonPhrase());
 		} else {
 			// Request user info
-			final ResponseEntity<String> infoResponse = restTemplate.exchange(userInfoUrl, HttpMethod.GET,
-					buildAuthRequest("Bearer", response.getBody().getAccess_token()), String.class);
+			ResponseEntity<String> infoResponse = null;
 
+			try {
+				infoResponse = restTemplate.exchange(userInfoUrl, HttpMethod.GET,
+						buildAuthRequest("Bearer", response.getBody().getAccess_token(), null), String.class);
+			} catch (final HttpClientErrorException httpEx) {
+				response = new ResponseEntity<TokenResponse>(new TokenResponse(), httpEx.getStatusCode());
+
+				if (httpEx instanceof HttpStatusCodeException) {
+					if (LOG.isDebugEnabled()) {
+						LOG.debug("Status Code: {}", httpEx.getStatusCode().value());
+						LOG.debug("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
+					}
+				}
+			}
 			if (!HttpStatus.OK.equals(infoResponse.getStatusCode())) {
 				response.getBody()
-						.setMessage("Failed to request user info. " + response.getStatusCode().getReasonPhrase());
+				.setMessage("Failed to request user info. " + response.getStatusCode().getReasonPhrase());
 			} else {
 				// save in cache
-				userCache.putUserInCache(buildUser(response.getBody(), infoResponse.getBody()));
+				userCache.putUserInCache(buildUser(response.getBody(), infoResponse.getBody(), redirectUri));
 			}
 		}
 
@@ -156,28 +185,42 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		final URI checkTokenUrl = UriComponentsBuilder.fromUriString(securityCfgService.getOauthServer())
 				.path(securityCfgService.getOauthCheckTokenPath()).build().toUri();
 
-		final ResponseEntity<String> response = restTemplate.exchange(checkTokenUrl, HttpMethod.GET,
-				buildAuthRequest("Bearer", primaryToken), String.class);
+		final MultiValueMap<String, String> postBody = new LinkedMultiValueMap<String, String>();
+		postBody.put("token", Collections.singletonList(primaryToken));
 
-		return HttpStatus.OK.equals(response.getStatusCode());
+		ResponseEntity<String> response = null;
+
+		try {
+			response = restTemplate.exchange(checkTokenUrl, HttpMethod.POST, buildAuthRequest("Basic",
+					securityCfgService.getOauthServiceClientId() + ":"
+							+ keystoreService.getPBEKey(securityCfgService.getOauthServiceClientId()),
+							postBody), String.class);
+
+		} catch (final IOException ioEx) {
+			LOG.error("Failed to get oauth client secret.", ioEx);
+		} catch (final GeneralSecurityException secEx) {
+			LOG.error("Failed to read client secret from keystore.", secEx);
+		}
+
+		return HttpStatus.OK.equals(response == null ? "" : response.getStatusCode());
 	}
 
 	protected void refreshUser(UserDetails user) {
-		loadByAuthorizationCode(((OauthUser) user).getRefreshToken());
+		loadByAuthorizationCode(((OauthUser) user).getRefreshToken(), ((OauthUser) user).getRedirectUri());
 	}
 
-	protected UserDetails buildUser(TokenResponse tokenResponse, String userInfo) {
+	protected UserDetails buildUser(TokenResponse tokenResponse, String userInfo, String redirectUri) {
 		final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		authorities.add(new SimpleGrantedAuthority("user"));
 
 		OauthUser userDetails = new OauthUser(userInfo, tokenResponse.getAccess_token(), authorities,
-				tokenResponse.getRefresh_token(), tokenResponse.getId_token());
+				tokenResponse.getRefresh_token(), redirectUri);
 
 		// Munge a secondary bearer token
 
 		try {
 			tokenResponse.setAccess_token(
-					nonceService.generateHash(securityCfgService.getSalt(), tokenResponse.getId_token()));
+					nonceService.generateHash(securityCfgService.getSalt(), tokenResponse.getAccess_token()));
 
 		} catch (final InvalidKeyException invalidKeyEx) {
 			tokenResponse.setMessage("Failed creating secondary token. " + invalidKeyEx.getMessage());
@@ -188,7 +231,6 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			tokenResponse.setAccess_token(null);
 			userDetails = null;
 		} finally {
-			tokenResponse.setId_token(null);
 			tokenResponse.setRefresh_token(null);
 
 			if (userDetails != null) {
@@ -199,18 +241,21 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		return userDetails;
 	}
 
-	private HttpEntity<Object> buildAuthRequest(String authType, String value) {
-		HttpEntity<Object> request = null;
+	private HttpEntity<MultiValueMap<String, String>> buildAuthRequest(String authType, String value,
+			MultiValueMap<String, String> postBody) {
+		HttpEntity<MultiValueMap<String, String>> request = null;
 
 		try {
 			final MultiValueMap<String, String> customHeaders = new LinkedMultiValueMap<String, String>();
-			customHeaders
-					.add("Authorization",
-							authType + ": "
-									+ (authType.equals("Basic")
-											? nonceService.encode(value.getBytes(StandardCharsets.UTF_8.name()))
-											: value));
-			request = new HttpEntity<Object>(customHeaders);
+			customHeaders.add("Authorization", authType + " " + (authType.equals("Basic")
+					? nonceService.encode(value.getBytes(StandardCharsets.UTF_8.name())) : value));
+
+			if (postBody != null) {
+				customHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+			}
+
+			request = new HttpEntity<MultiValueMap<String, String>>(postBody, customHeaders);
+
 		} catch (final UnsupportedEncodingException e) {
 			LOG.error("Failed to buid auth request.", e);
 		}

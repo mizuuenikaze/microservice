@@ -58,7 +58,7 @@
 	</logger>
 	
 	<logger name="org.apache.http.wire">
-		<level value="ERROR" />
+		<level value="DEBUG" />
 	</logger>
 
 	<logger name="org.apache.http.client">

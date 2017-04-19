@@ -37,7 +37,7 @@ public class KeystoreServiceTest {
 	@Before
 	public void setup() {
 		allApplications = new HashMap<String, String>();
-		allApplications.put("mzint.quickbooks.1.0.0.Release", "8a9a083b5a3349b5bdf4b804a1118ada");
+		allApplications.put("mukapi", "umkay!");
 
 		keystoreService = new DefaultKeystoreService();
 		keystoreService.setKeystore(Paths.get(System.getProperty("custom.application.keystore")));

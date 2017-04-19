@@ -42,23 +42,6 @@ public class SpringMvcConfig extends WebMvcConfigurerAdapter {
 		registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
 	}
 
-	// Only needed if we are using @Value and ${...} when referencing properties
-	// @Bean
-	// public static PropertySourcesPlaceholderConfigurer properties() {
-	// PropertySourcesPlaceholderConfigurer propertySources = new
-	// PropertySourcesPlaceholderConfigurer();
-	// Resource[] resources = new ClassPathResource[] { new ClassPathResource(
-	// "spring.properties") };
-	// propertySources.setLocations(resources);
-	// propertySources.setIgnoreUnresolvablePlaceholders(true);
-	// return propertySources;
-	// }
-
-	@Override
-	public void addCorsMappings(CorsRegistry registry) {
-		registry.addMapping("/view/embed/**");
-	}
-
 	// Provides internationalization of messages
 	@Bean
 	public ResourceBundleMessageSource messageSource() {

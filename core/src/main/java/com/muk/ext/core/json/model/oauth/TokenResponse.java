@@ -24,7 +24,6 @@ import com.muk.ext.core.json.RestReply;
 public class TokenResponse extends RestReply {
 	private String access_token;
 	private String token_type;
-	private String id_token;
 	private String refresh_token;
 	private String expires_in;
 	private String scope;
@@ -44,14 +43,6 @@ public class TokenResponse extends RestReply {
 
 	public void setToken_type(String token_type) {
 		this.token_type = token_type;
-	}
-
-	public String getId_token() {
-		return id_token;
-	}
-
-	public void setId_token(String id_token) {
-		this.id_token = id_token;
 	}
 
 	public String getRefresh_token() {

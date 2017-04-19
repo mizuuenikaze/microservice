@@ -23,7 +23,7 @@ import com.muk.ext.core.AbstractBeanGenerator;
 
 /**
  * Basic framework for all processors.
- * 
+ *
  * @param <BodyType>
  *            The expected type of the in message.
  * @param <ReturnType>The
@@ -46,7 +46,7 @@ public abstract class AbstractProcessor<BodyType, ReturnType> implements Process
 			result = forceFail(exchange);
 			exchange.getIn().removeHeader("killSwitch");
 		} else {
-			BodyType body = extractBody(exchange);
+			final BodyType body = extractBody(exchange);
 			result = handleExchange(body, exchange);
 		}
 

@@ -21,6 +21,6 @@ public interface RestConstants {
 		public static final String adminPath = "/api/admin";
 		public static final String notificationPath = "/api/muksink/notification";
 		public static final String configurationPath = "/api/mousink/configuation";
-		public static final String apiPath = "/api/placeholder";
+		public static final String apiPath = "/api/v1";
 	}
 }
