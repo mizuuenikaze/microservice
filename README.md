@@ -33,6 +33,9 @@
 	* Put the secret in the keystore.
 	* Profit...
 
+### UAA ###
+* The war is to be deployed to tomcat and can be configured with the provided webapp/src/main/webapp/resources/uaa.yml file in a development environment.
+
 ### keystores ###
 * The gradle/config/buildConfig.groovy file has some configuration values for the location and password to a keystore that will hold sensitive values.
 	* Depends on JCE, so download the correct policy files to update your jdk/jre.
