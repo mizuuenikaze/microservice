@@ -7,16 +7,9 @@ binaryRepository {
 
 environments {
 	fcdev {
-		server {
-			hostname = 'target.jenkinsserver.com'
-			port = 80
-			context = 'verse'
-			username = 'jenkins'
-			password = 'jenkins'
-		}
-
 		keystorefile = '/usr/local/share/keystore/appkeystore.jceks'
 		keystorepass = 'cowsarecool'
+		logging = '/tmp'
 
 		properties {
 			services {
@@ -63,16 +56,9 @@ environments {
 	}
 
 	prod {
-		server {
-			hostname = 'target.jenkinsserver.com'
-			port = 80
-			context = 'verse'
-			username = 'jenkins'
-			password = 'jenkins'
-		}
-
 		keystorefile = '/usr/local/share/keystore/appkeystore.jceks'
 		keystorepass = 'cowsarecool'
+		logging = '/tmp'
 
 		properties {
 			services {

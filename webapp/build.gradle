@@ -13,6 +13,8 @@ apply plugin: 'war'
 
 archivesBaseName  = 'com.muk.microservices'
 ext.fullRepoUrl = "$config.binaryRepository.url/$config.binaryRepository.name"
+// UAA has to be locally built to find the war for distribution
+ext.uaaWar = '../../uaa/uaa/build/libs/cloudfoundry-identity-uaa-3.2.1.war'
 
 repositories {
 	maven { url fullRepoUrl }
@@ -62,8 +64,6 @@ dependencies {
 	
 	testCompile 'commons-io:commons-io:2.5'
 }
-
-//mainClassName = 'com.muk.app.StandAloneEntry'
 
 ext.mainClassName = 'com.muk.app.StandAloneEntry'
 
@@ -137,6 +137,7 @@ task createStartScripts (type: CreateStartScripts, dependsOn: microsvc) {
 	applicationName = 'muksvc'
 	mainClassName = project.ext.mainClassName
 	defaultJvmOpts = applicationDefaultJvmArgs
+	//This must be modified buy the ebuild or other package management tool or manually.
 	classpath = fileTree(dir: "$buildDir").matching { include 'appLibs/*.jar', "libs/$project.archivesBaseName*.jar" }
 }
 
@@ -152,9 +153,19 @@ distributions {
 	}
 }
 
+muksvcDistTar {
+	compression = Compression.GZIP
+
+	doFirst {
+		assert file(uaaWar).exists()
+	}
+}
+
 CopySpec libChildSpec = project.copySpec();
 libChildSpec.into("lib");
-libChildSpec.from("$buildDir/libs") { include "$project.archivesBaseName*.jar" }
+libChildSpec.from(["$buildDir/libs", uaaWar]) {
+	include "$project.archivesBaseName*.jar",'**/*.war'
+}
 
 CopySpec binChildSpec = project.copySpec();
 binChildSpec.into("bin");
@@ -179,4 +190,4 @@ check.dependsOn integrationTest
 assemble.dependsOn microsvc
 integrationTest.mustRunAfter test
 microsvc.mustRunAfter war
-
+jettydistDistTar.mustRunAfter microsvc

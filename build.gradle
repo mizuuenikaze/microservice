@@ -33,7 +33,7 @@ allprojects {
 		restletVersion='2.3.9'
 		camelVersion='2.18.3'
 		jacksonVersion='2.9.0.pr2'
-		applicationDefaultJvmArgs = ['-Dcustom.logging.root=/tmp', '-Dcustom.application.keystore=' + parsedConfig.keystorefile, '-Dcustom.application.keystorepass=' + parsedConfig.keystorepass]
+		applicationDefaultJvmArgs = ['-Dcustom.logging.root=' + parsedConfig.logging, '-Dcustom.application.keystore=' + parsedConfig.keystorefile, '-Dcustom.application.keystorepass=' + parsedConfig.keystorepass]
 	}
 }
 
@@ -105,6 +105,8 @@ project(':services') {
 		propertyRoot = config.properties.services.route
 		fileName = 'route'
 	}
+
+	build.mustRunAfter('buildProperties')
 }
 
 project(':webapp') {
@@ -123,10 +125,23 @@ project(':webapp') {
 		propertyRoot = config.properties.webapp.camel
 		fileName = 'camel'
 	}
+
+	build.mustRunAfter('buildProperties')
 }
 
 task wrapper(type: Wrapper) {
 	gradleVersion = '3.4.1'
+}
+
+// epack alludes to a task that packages a project to be used in a portage ebuild
+task epack(dependsOn: ['services:buildProperties', 'webapp:buildProperties'] + subprojects.build) {
+	doLast {
+		println '******'
+		println '\tProduction build ' + version
+		println '\tCreate tag and release to github as v' + version
+		println '\tCreate a new branch, next rev and bump minor version'
+		println '******'
+	}
 }
 
 class PropertyBuilderTask extends DefaultTask {
@@ -141,4 +156,3 @@ class PropertyBuilderTask extends DefaultTask {
 		prop.store(propFile.newWriter(), null)
 	}
 }
-
