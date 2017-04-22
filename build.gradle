@@ -96,7 +96,7 @@ subprojects {
 
 project(':services') {
 	dependencies {
-		compile project(':core')
+		compile project(':muk-core')
 	}
 
 	task buildProperties(dependsOn: ['buildRoutes'])
@@ -111,7 +111,7 @@ project(':services') {
 
 project(':webapp') {
 	dependencies {
-		compile project(':core'), project(':services')
+		compile project(':muk-core'), project(':services')
 	}
 
 	task buildProperties(dependsOn: ['buildSecurity', 'buildCamel'])

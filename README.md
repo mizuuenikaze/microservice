@@ -7,15 +7,15 @@
 
 ### How do I get set up? ###
 * This is a multi-project setup that can be built with
-* * ./gradlew build -Penv=dev
-* * ./gradelw build -x test -x integrationtest -Penv=dev # skip tests
+	* ./gradlew build -Penv=dev
+	* ./gradelw build -x test -x integrationtest -Penv=dev # skip tests
 
 * Building a production release
-* * SOURCE_BUILD_NUMBER=N ./gradlew clean epack -Penv=prod
+	* SOURCE_BUILD_NUMBER=N ./gradlew clean epack -Penv=prod
 
 
 * How to run tests
-* * The tests are junit tests.  In eclipse, you can run them in the IDE.  A full build will also run the tests.
+	* The tests are junit tests.  In eclipse, you can run them in the IDE.  A full build will also run the tests.
 
 ### Eclipse setup ###
 

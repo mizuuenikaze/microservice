@@ -1,3 +1,3 @@
-include ':core'
+include ':muk-core'
 include ':services'
 include ':webapp'

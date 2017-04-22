@@ -1,3 +1,7 @@
+/*
+ * Standalone application with embedded jetty
+ */
+
 buildscript {
 	repositories {
 		mavenCentral()
@@ -11,10 +15,8 @@ buildscript {
 apply plugin: 'distribution'
 apply plugin: 'war'
 
-archivesBaseName  = 'com.muk.microservices'
+archivesBaseName  = 'muk-microservices'
 ext.fullRepoUrl = "$config.binaryRepository.url/$config.binaryRepository.name"
-// UAA has to be locally built to find the war for distribution
-ext.uaaWar = '../../uaa/uaa/build/libs/cloudfoundry-identity-uaa-3.2.1.war'
 
 repositories {
 	maven { url fullRepoUrl }
@@ -60,7 +62,7 @@ dependencies {
 	compile 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect:1.3.0'
 	compile 'org.eclipse.jetty:jetty-webapp:9.4.3.v20170317'
 	compile 'org.eclipse.jetty:jetty-annotations:9.4.3.v20170317'
-	compile 'javax.servlet:javax.servlet-api:4.0.0-b05'
+	providedRuntime 'javax.servlet:javax.servlet-api:3.1.0'
 	
 	testCompile 'commons-io:commons-io:2.5'
 }
@@ -153,18 +155,10 @@ distributions {
 	}
 }
 
-muksvcDistTar {
-	compression = Compression.GZIP
-
-	doFirst {
-		assert file(uaaWar).exists()
-	}
-}
-
 CopySpec libChildSpec = project.copySpec();
 libChildSpec.into("lib");
-libChildSpec.from(["$buildDir/libs", uaaWar]) {
-	include "$project.archivesBaseName*.jar",'**/*.war'
+libChildSpec.from(["$buildDir/libs"]) {
+	include "$project.archivesBaseName*.jar"
 }
 
 CopySpec binChildSpec = project.copySpec();

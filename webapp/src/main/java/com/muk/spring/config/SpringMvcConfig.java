@@ -16,13 +16,10 @@
  *******************************************************************************/
 package com.muk.spring.config;
 
-import nz.net.ultraq.thymeleaf.LayoutDialect;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -30,6 +27,8 @@ import org.thymeleaf.extras.springsecurity4.dialect.SpringSecurityDialect;
 import org.thymeleaf.spring4.SpringTemplateEngine;
 import org.thymeleaf.spring4.view.ThymeleafViewResolver;
 import org.thymeleaf.templateresolver.ServletContextTemplateResolver;
+
+import nz.net.ultraq.thymeleaf.LayoutDialect;
 
 @Configuration
 @EnableWebMvc
@@ -45,14 +44,14 @@ public class SpringMvcConfig extends WebMvcConfigurerAdapter {
 	// Provides internationalization of messages
 	@Bean
 	public ResourceBundleMessageSource messageSource() {
-		ResourceBundleMessageSource source = new ResourceBundleMessageSource();
+		final ResourceBundleMessageSource source = new ResourceBundleMessageSource();
 		source.setBasename("messages");
 		return source;
 	}
 
 	@Bean
 	public ServletContextTemplateResolver templateResolver() {
-		ServletContextTemplateResolver resolver = new ServletContextTemplateResolver();
+		final ServletContextTemplateResolver resolver = new ServletContextTemplateResolver();
 		resolver.setPrefix("/WEB-INF/templates/");
 		resolver.setSuffix(".html");
 		resolver.setTemplateMode("HTML5");
@@ -62,7 +61,7 @@ public class SpringMvcConfig extends WebMvcConfigurerAdapter {
 
 	@Bean
 	public SpringTemplateEngine templateEngine() {
-		SpringTemplateEngine engine = new SpringTemplateEngine();
+		final SpringTemplateEngine engine = new SpringTemplateEngine();
 		engine.setTemplateResolver(templateResolver());
 		engine.addDialect(new LayoutDialect());
 		engine.addDialect(new SpringSecurityDialect());
@@ -71,7 +70,7 @@ public class SpringMvcConfig extends WebMvcConfigurerAdapter {
 
 	@Bean
 	public ThymeleafViewResolver thymeleafViewResolver() {
-		ThymeleafViewResolver resolver = new ThymeleafViewResolver();
+		final ThymeleafViewResolver resolver = new ThymeleafViewResolver();
 		resolver.setTemplateEngine(templateEngine());
 		return resolver;
 	}

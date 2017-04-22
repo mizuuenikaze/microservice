@@ -2,7 +2,7 @@
  * Services isolated from how the api is hosted.
  */
 
-archivesBaseName='com.muk.services'
+archivesBaseName='muk-services'
 
 dependencies {
 	compile 'org.slf4j:slf4j-api:1.7.25'

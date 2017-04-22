@@ -134,8 +134,6 @@ public class HashifyingFilter extends GenericFilterBean {
 
 			// Disable the app if we don't know about it
 			if (!appState.exists(Integer.valueOf(tenant))) {
-				final Map<String, String> headers = new HashMap<String, String>();
-
 
 				try {
 
@@ -163,8 +161,6 @@ public class HashifyingFilter extends GenericFilterBean {
 	private boolean isAuthenticated(String tenant, String userId, String queryStringDate, String queryStringHash,
 			String body, HttpServletResponse response, String cookieValue) {
 		boolean authenticated = false;
-		final Map<String, String> headers = new HashMap<String, String>();
-
 
 		final Cookie mozuCookie = new Cookie("mozuToken", cookieValue);
 		mozuCookie.setMaxAge(86400);

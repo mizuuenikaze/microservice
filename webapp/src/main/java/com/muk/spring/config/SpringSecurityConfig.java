@@ -43,9 +43,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.header.writers.frameoptions.AllowFromStrategy;
-import org.springframework.security.web.header.writers.frameoptions.RegExpAllowFromStrategy;
-import org.springframework.security.web.header.writers.frameoptions.XFrameOptionsHeaderWriter;
 
 import com.muk.services.security.BearerTokenAuthenticationProvider;
 
@@ -83,9 +80,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
-		final AllowFromStrategy strategy = new RegExpAllowFromStrategy(".*");
-
-		final XFrameOptionsHeaderWriter writer = new XFrameOptionsHeaderWriter(strategy);
 
 		http.authorizeRequests().antMatchers("/view/ext/**").authenticated().and().formLogin().and().httpBasic();
 

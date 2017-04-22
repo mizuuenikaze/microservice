@@ -16,8 +16,6 @@
  *******************************************************************************/
 package com.muk.services.processor;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,7 +62,6 @@ public class DataTranslationProcessor extends AbstractInboundProcessor<CsvRecord
 		final CsvImportStatus status = successStatus();
 		status.setRecord(body.getRecord());
 
-		final Map<String, String> headers = new HashMap<String, String>();
 		final String csvFile = exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
 		final Matcher matcher = tenantPattern.matcher(csvFile);
 		matcher.find();

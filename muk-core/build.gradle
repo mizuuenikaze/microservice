@@ -5,7 +5,7 @@
  *
 */
 
-archivesBaseName='com.muk.core'
+archivesBaseName='muk-core'
 
 dependencies {
 	compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: jacksonVersion
