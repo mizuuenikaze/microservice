@@ -17,6 +17,7 @@
 #
 # Custom makefile for a ampersand based frontend
 #
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -120,6 +121,35 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
+am__install_max = 40
+am__nobase_strip_setup = \
+  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
+am__nobase_strip = \
+  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
+am__nobase_list = $(am__nobase_strip_setup); \
+  for p in $$list; do echo "$$p $$p"; done | \
+  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
+  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
+    if (++n[$$2] == $(am__install_max)) \
+      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
+    END { for (dir in files) print dir, files[dir] }'
+am__base_list = \
+  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
+  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
+am__uninstall_files_from_dir = { \
+  test -z "$$files" \
+    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
+    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
+         $(am__cd) "$$dir" && rm -f $$files; }; \
+  }
+am__installdirs = "$(DESTDIR)$(jettydir)"
+DATA = $(jetty_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in install-sh missing
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -159,6 +189,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
+LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
@@ -170,6 +201,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -213,6 +245,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+jettydir = /usr/local/share/jetty-9
+jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
 all: all-am
 
 .SUFFIXES:
@@ -249,6 +283,27 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	$(am__cd) $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 $(am__aclocal_m4_deps):
+install-jettyDATA: $(jetty_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(jetty_DATA)'; test -n "$(jettydir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(jettydir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(jettydir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(jettydir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(jettydir)" || exit $$?; \
+	done
+
+uninstall-jettyDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(jetty_DATA)'; test -n "$(jettydir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(jettydir)'; $(am__uninstall_files_from_dir)
 tags TAGS:
 
 ctags CTAGS:
@@ -421,8 +476,11 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile all-local
+all-am: Makefile $(DATA) all-local
 installdirs:
+	for dir in "$(DESTDIR)$(jettydir)"; do \
+	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
+	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -474,13 +532,13 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-jettyDATA
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-exec-local
 
 install-html: install-html-am
 
@@ -520,7 +578,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am:
+uninstall-am: uninstall-jettyDATA
 
 .MAKE: install-am install-strip
 
@@ -531,39 +589,48 @@ uninstall-am:
 	distdir distuninstallcheck dvi dvi-am html html-am info \
 	info-am install install-am install-data install-data-am \
 	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic pdf pdf-am ps ps-am tags-am \
-	uninstall uninstall-am
+	install-exec-local install-html install-html-am install-info \
+	install-info-am install-jettyDATA install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
+	pdf-am ps ps-am tags-am uninstall uninstall-am \
+	uninstall-jettyDATA
 
 .PRECIOUS: Makefile
 
 
 epack:
-	./gradlew epack -Penv=$(CONF_ENV)
+	./gradlew epack -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 build:
-	./gradlew build -x test -x integrationtest -Penv=$(CONF_ENV)
+	./gradlew build -x test -x integrationtest -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 eclipse:
-	./gradlew clean cleanEclipse eclipse -Penv=$(CONF_ENV)
+	./gradlew clean cleanEclipse eclipse -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 properties:
-	./gradlew services:buildProperties webapp:buildProperties -Penv=$(CONF_ENV)
+	./gradlew services:buildProperties webapp:buildProperties -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 clean-local:
-	./gradlew clean -Penv=$(CONF_ENV)
+	./gradlew clean -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 appRun:
-	./gradlew appRun -Penv=$(CONF_ENV)
+	./gradlew appRun -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 appDebug:
-	./gradlew appDebug -Penv=$(CONF_ENV)
+	./gradlew appDebug -Penv=$(CONF_ENV) -Pv=$(VERSION)
+
+install-exec-local:
+	$(am__untar) webapp/distributions/$(PACKAGE)-$(VERSION).tar -C $(DESTDIR)$(prefix)/
+	$(LN_S) $(DESTDIR)$(prefix)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE) $(DESTDIR)$(bindir)/$(PACKAGE)
+	$(SED) -i \
+		-e "/^CLASSPATH/ s|\(^.*\)\$$APP_HOME|\1\$$REVERT_HOME|" \
+		-e "/^CLASSPATH/ s|\$$APP_HOME/lib|$(jettydir)|g" \
+		-e "/^CLASSPATH/ s|REVERT|APP|g" $(DESTDIR)$(prefix)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
 
 all-local: build
-.PHONY: build eclipse properties epack
+.PHONY: build eclipse properties epack appRun appDebug
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

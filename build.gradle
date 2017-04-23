@@ -26,7 +26,7 @@ if (buildEnv == '') {
 }
 
 allprojects {
-	apply from: "$rootDir/gradle/versioning.gradle"
+	version = project.getProperty('v')
 	ext {
 		config = parsedConfig
 		springVersion='4.3.7.RELEASE'
@@ -34,6 +34,7 @@ allprojects {
 		camelVersion='2.18.3'
 		jacksonVersion='2.9.0.pr2'
 		applicationDefaultJvmArgs = ['-Dcustom.logging.root=' + parsedConfig.logging, '-Dcustom.application.keystore=' + parsedConfig.keystorefile, '-Dcustom.application.keystorepass=' + parsedConfig.keystorepass]
+		buildTimestamp = new Date().format('yyyy-MM-dd HH:mm:ss')
 	}
 }
 

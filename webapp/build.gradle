@@ -144,12 +144,6 @@ task createStartScripts (type: CreateStartScripts, dependsOn: microsvc) {
 }
 
 distributions {
-	jettydist {
-		baseName = 'jetty9'
-		contents {
-			from { "$buildDir/appLibs"}
-		}
-	}
 	muksvc {
 		baseName = 'muksvc'
 	}
@@ -176,7 +170,6 @@ distributions.muksvc.getContents().with(childSpec);
 
 distTar.enabled = false
 distZip.enabled = false
-jettydistDistZip.enabled = false
 muksvcDistZip.enabled = false
 
 /* ----------- task depends ---------------*/
@@ -184,4 +177,3 @@ check.dependsOn integrationTest
 assemble.dependsOn microsvc
 integrationTest.mustRunAfter test
 microsvc.mustRunAfter war
-jettydistDistTar.mustRunAfter microsvc
