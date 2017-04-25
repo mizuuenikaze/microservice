@@ -15,9 +15,6 @@ camel.properties
 
 # autotools
 autom4te.cache/
-aclocal.m4
-install-sh
-missing
 Makefile
 config.log
 config.status
