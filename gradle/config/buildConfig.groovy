@@ -6,7 +6,7 @@ binaryRepository {
 }
 
 environments {
-	fcdev {
+	dev {
 		keystorefile = '/usr/local/share/keystore/appkeystore.jceks'
 		keystorepass = 'cowsarecool'
 		logging = '/tmp'

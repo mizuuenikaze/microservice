@@ -48,7 +48,7 @@ public class EhCacheBasedTokenCache implements UserCache, InitializingBean {
 
 	@Override
 	public UserDetails getUserFromCache(String key) {
-		final UserDetails element = (UserDetails) cache.get(key).get();
+		final UserDetails element = cache.get(key) != null ? (UserDetails) cache.get(key).get() : null;
 
 		if (logger.isDebugEnabled()) {
 			logger.debug("Cache hit: " + (element != null) + "; username: " + key);

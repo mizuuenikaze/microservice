@@ -43,8 +43,8 @@ public class BearerAuthenticationToken extends AbstractAuthenticationToken {
 
 	@Override
 	public String getName() {
-		if (this.getPrincipal() instanceof OauthUser) {
-			return ((OauthUser) this.getPrincipal()).getUsername();
+		if (getPrincipal() instanceof OauthUser) {
+			return ((OauthUser) getPrincipal()).getUsername();
 		}
 
 		return super.getName();
@@ -52,6 +52,10 @@ public class BearerAuthenticationToken extends AbstractAuthenticationToken {
 
 	@Override
 	public Object getCredentials() {
+		if (getPrincipal() instanceof OauthUser) {
+			return ((OauthUser)getPrincipal()).getSecondaryToken();
+		}
+
 		return " ";
 	}
 

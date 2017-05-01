@@ -176,7 +176,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-CONF_ENV = @CONF_ENV@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 ECHO_C = @ECHO_C@
@@ -245,8 +244,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-jettydir = /usr/local/share/jetty-9
-jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
+@DEBUG_FALSE@CONF_ENV = prod
+@DEBUG_TRUE@CONF_ENV = dev
+@DEBUG_FALSE@jettydir = /usr/local/share/jetty-9
+@DEBUG_FALSE@jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
 all: all-am
 
 .SUFFIXES:
@@ -616,10 +617,10 @@ clean-local:
 	./gradlew clean -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 appRun:
-	./gradlew appRun -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	exec ./gradlew appRun --no-daemon -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 appDebug:
-	./gradlew appDebug -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	exec ./gradlew appDebug --no-daemon -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 install-exec-local:
 	$(am__untar) webapp/distributions/$(PACKAGE)-$(VERSION).tar -C $(DESTDIR)$(prefix)/
@@ -628,8 +629,9 @@ install-exec-local:
 		-e "/^CLASSPATH/ s|\(^.*\)\$$APP_HOME|\1\$$REVERT_HOME|" \
 		-e "/^CLASSPATH/ s|\$$APP_HOME/lib|$(jettydir)|g" \
 		-e "/^CLASSPATH/ s|REVERT|APP|g" $(DESTDIR)$(prefix)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
+@DEBUG_TRUE@all-local: build
+@DEBUG_FALSE@all-local: epack
 
-all-local: build
 .PHONY: build eclipse properties epack appRun appDebug
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

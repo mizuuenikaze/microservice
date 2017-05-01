@@ -2,8 +2,6 @@
 # Custom makefile for a ampersand based frontend
 #
 
-jettydir = /usr/local/share/jetty-9
-jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
 
 epack:
 	./gradlew epack -Penv=$(CONF_ENV) -Pv=$(VERSION)
@@ -21,10 +19,10 @@ clean-local:
 	./gradlew clean -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 appRun:
-	./gradlew appRun -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	exec ./gradlew appRun --no-daemon -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 appDebug:
-	./gradlew appDebug -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	exec ./gradlew appDebug --no-daemon -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 install-exec-local:
 	$(am__untar) webapp/distributions/$(PACKAGE)-$(VERSION).tar -C $(DESTDIR)$(prefix)/
@@ -34,5 +32,15 @@ install-exec-local:
 		-e "/^CLASSPATH/ s|\$$APP_HOME/lib|$(jettydir)|g" \
 		-e "/^CLASSPATH/ s|REVERT|APP|g" $(DESTDIR)$(prefix)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
 
+if DEBUG
+CONF_ENV = dev
 all-local: build
+
+else
+CONF_ENV = prod
+all-local: epack
+jettydir = /usr/local/share/jetty-9
+jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
+endif
+
 .PHONY: build eclipse properties epack appRun appDebug

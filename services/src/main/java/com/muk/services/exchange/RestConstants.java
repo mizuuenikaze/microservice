@@ -22,5 +22,11 @@ public interface RestConstants {
 		public static final String notificationPath = "/api/muksink/notification";
 		public static final String configurationPath = "/api/mousink/configuation";
 		public static final String apiPath = "/api/v1";
+		public static final String anonymousToken = "anonymousToken";
+	}
+
+	interface Headers {
+		public static final String outOfBandMessage = "MUK_OOB_MESSAGE";
+		public static final String refreshToken = "MUK_REFRESH_TOKEN";
 	}
 }

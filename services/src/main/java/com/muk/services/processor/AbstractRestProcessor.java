@@ -14,12 +14,23 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.muk.ext.camel.processor;
+package com.muk.services.processor;
 
-import com.muk.ext.core.json.RestReply;
+import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
+import org.restlet.data.Status;
 
-public abstract class AbstractRestProcessor<BodyType, ReturnType extends RestReply>
+import com.muk.ext.camel.processor.AbstractProcessor;
+
+public abstract class AbstractRestProcessor<BodyType, ReturnType>
 extends AbstractProcessor<BodyType, ReturnType> {
+
+	@Override
+	protected ReturnType forceFail(Exchange exchange) {
+		exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE,
+				Integer.valueOf(Status.SERVER_ERROR_INTERNAL.getCode()));
+		throw new RuntimeCamelException("Force Fail");
+	}
 
 	@Override
 	protected boolean propagateHeaders() {

@@ -25,7 +25,6 @@ import org.apache.camel.Exchange;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.muk.ext.camel.processor.AbstractInboundProcessor;
-import com.muk.ext.core.AbstractBeanGenerator;
 import com.muk.ext.csv.CsvRecord;
 import com.muk.ext.status.Status;
 import com.muk.services.api.CsvImportService;
@@ -58,6 +57,11 @@ public class DataTranslationProcessor extends AbstractInboundProcessor<CsvRecord
 	}
 
 	@Override
+	protected Class<? extends CsvImportStatus> getReturnClass() {
+		return CsvImportStatus.class;
+	}
+
+	@Override
 	protected CsvImportStatus handleExchange(CsvRecord body, Exchange exchange) throws Exception {
 		final CsvImportStatus status = successStatus();
 		status.setRecord(body.getRecord());
@@ -87,13 +91,6 @@ public class DataTranslationProcessor extends AbstractInboundProcessor<CsvRecord
 	@Override
 	protected boolean propagateAttachments() {
 		return true;
-	}
-
-	@Inject
-	@Qualifier("processCsvImportBeanGenerator")
-	@Override
-	public void setBeanGenerator(AbstractBeanGenerator<CsvImportStatus> beanGenerator) {
-		super.setBeanGenerator(beanGenerator);
 	}
 
 }

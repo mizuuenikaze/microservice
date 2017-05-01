@@ -56,6 +56,9 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		// Don't clear credentials from the authorization.  This is our oauth access token
+		auth.eraseCredentials(false);
+
 		// Add custom provider for a bearer token
 		auth.authenticationProvider(bearerTokenAuthenticationProvider());
 

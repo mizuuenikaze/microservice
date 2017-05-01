@@ -14,56 +14,33 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.muk.services.processor.api;
+package com.muk.services.processor;
 
-import javax.inject.Inject;
+import java.util.List;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.RuntimeCamelException;
 import org.restlet.data.Status;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.muk.ext.camel.processor.AbstractProcessor;
-import com.muk.ext.core.AbstractBeanGenerator;
-import com.muk.ext.core.api.Dummy;
+import com.muk.ext.camel.processor.AbstractListProcessor;
 
-
-public class SettingApiGetProcessor extends AbstractProcessor<Object, Dummy> {
+public abstract class AbstractRestListProcessor<BodyType, ReturnType>
+extends AbstractListProcessor<BodyType, ReturnType> {
 
 	@Override
-	protected Dummy forceFail(Exchange exchange) {
+	protected List<ReturnType> forceFail(Exchange exchange) {
 		exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE,
-				Integer.valueOf(Status.CLIENT_ERROR_BAD_REQUEST.getCode()));
-
-		return createResponse();
-	}
-
-	@Override
-	protected Class<? extends Object> getBodyClass() {
-		return Dummy.class;
-	}
-
-	@Override
-	protected Dummy handleExchange(Object body, Exchange exchange) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+				Integer.valueOf(Status.SERVER_ERROR_INTERNAL.getCode()));
+		throw new RuntimeCamelException("Force Fail");
 	}
 
 	@Override
 	protected boolean propagateHeaders() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	protected boolean propagateAttachments() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Inject
-	@Qualifier("dummyBeanGenerator")
-	@Override
-	public void setBeanGenerator(AbstractBeanGenerator<Dummy> beanGenerator) {
-		super.setBeanGenerator(beanGenerator);
+		return true;
 	}
 }

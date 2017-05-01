@@ -57,6 +57,7 @@ import com.muk.ext.security.KeystoreService;
 import com.muk.ext.security.NonceService;
 import com.muk.services.api.CachingOauthUserDetailsService;
 import com.muk.services.api.SecurityConfigurationService;
+import com.muk.services.exchange.RestConstants;
 
 public class BearerTokenUserDetailsService implements CachingOauthUserDetailsService {
 	private static final Logger LOG = LoggerFactory.getLogger(BearerTokenUserDetailsService.class);
@@ -84,7 +85,7 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		UserDetails user = userCache.getUserFromCache(username);
 
 		if (user == null) {
-			user = loadInvalidUser();
+			user = loadAnonymousUser();
 		} else if (!(user instanceof OauthUser)) {
 			throw new UsernameNotFoundException("Unexpected user detail type.");
 		} else if (!isValidToken(user.getPassword())) {
@@ -177,8 +178,10 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		this.userCache = userCache;
 	}
 
-	protected UserDetails loadInvalidUser() {
-		return new OauthUser("unknown", " ", false, false, false, false, Collections.emptyList(), null, null);
+	protected UserDetails loadAnonymousUser() {
+		final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+		return new OauthUser(RestConstants.Rest.anonymousToken, " ", true, true, true, true, authorities, null, null);
 	}
 
 	protected boolean isValidToken(String primaryToken) {
@@ -186,6 +189,9 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 				.path(securityCfgService.getOauthCheckTokenPath()).build().toUri();
 
 		final MultiValueMap<String, String> postBody = new LinkedMultiValueMap<String, String>();
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("primary token on check token lookup {}", primaryToken);
+		}
 		postBody.put("token", Collections.singletonList(primaryToken));
 
 		ResponseEntity<String> response = null;
@@ -198,8 +204,19 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 
 		} catch (final IOException ioEx) {
 			LOG.error("Failed to get oauth client secret.", ioEx);
+			response = new ResponseEntity<String>("", HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (final GeneralSecurityException secEx) {
 			LOG.error("Failed to read client secret from keystore.", secEx);
+			response = new ResponseEntity<String>("", HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (final HttpClientErrorException httpEx) {
+			response = new ResponseEntity<String>("", httpEx.getStatusCode());
+
+			if (httpEx instanceof HttpStatusCodeException) {
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("Status Code: {}", httpEx.getStatusCode().value());
+					LOG.debug("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
+				}
+			}
 		}
 
 		return HttpStatus.OK.equals(response == null ? "" : response.getStatusCode());
@@ -211,7 +228,7 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 
 	protected UserDetails buildUser(TokenResponse tokenResponse, String userInfo, String redirectUri) {
 		final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-		authorities.add(new SimpleGrantedAuthority("user"));
+		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
 		OauthUser userDetails = new OauthUser(userInfo, tokenResponse.getAccess_token(), authorities,
 				tokenResponse.getRefresh_token(), redirectUri);

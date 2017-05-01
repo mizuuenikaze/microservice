@@ -28,8 +28,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.muk.ext.camel.processor.AbstractRestProcessor;
-import com.muk.ext.core.AbstractBeanGenerator;
 import com.muk.ext.core.json.model.oauth.TokenResponse;
 import com.muk.services.api.CachingOauthUserDetailsService;
 
@@ -46,22 +44,20 @@ public class TokenLoginProcessor extends AbstractRestProcessor<Object, TokenResp
 	private CachingOauthUserDetailsService userDetailService;
 
 	@Override
-	protected TokenResponse forceFail(Exchange exchange) {
-		final TokenResponse reply = createResponse();
-		reply.setMessage("Force fail.");
-
-		return reply;
-	}
-
-	@Override
 	protected Class<? extends Object> getBodyClass() {
 		return Object.class;
 	}
 
 	@Override
+	protected Class<? extends TokenResponse> getReturnClass() {
+		return TokenResponse.class;
+	}
+
+	@Override
 	protected TokenResponse handleExchange(Object body, Exchange exchange) throws Exception {
 		String authorizationCode = "";
-		final UriComponents redirectComponents = UriComponentsBuilder.fromUriString(exchange.getIn().getHeader(Exchange.HTTP_URI, String.class)).replaceQuery(null).build();
+		final UriComponents redirectComponents = UriComponentsBuilder
+				.fromUriString(exchange.getIn().getHeader(Exchange.HTTP_URI, String.class)).replaceQuery(null).build();
 
 		if (exchange.getIn().getHeader(Exchange.HTTP_METHOD, String.class) == HttpMethod.GET.name()) {
 			final UriComponents uriComponents = UriComponentsBuilder.newInstance()
@@ -71,7 +67,8 @@ public class TokenLoginProcessor extends AbstractRestProcessor<Object, TokenResp
 			authorizationCode = exchange.getIn().getHeader("authorizationCode", String.class);
 		}
 
-		final TokenResponse response = userDetailService.loadByAuthorizationCode(authorizationCode, redirectComponents.toUriString());
+		final TokenResponse response = userDetailService.loadByAuthorizationCode(authorizationCode,
+				redirectComponents.toUriString());
 
 		if (StringUtils.isNotBlank(response.getMessage())) {
 			exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE,
@@ -81,13 +78,5 @@ public class TokenLoginProcessor extends AbstractRestProcessor<Object, TokenResp
 		}
 
 		return response;
-	}
-
-	@Inject
-	@Qualifier("tokenResponseBeanGenerator")
-	@Override
-	public void setBeanGenerator(AbstractBeanGenerator<TokenResponse> beanGenerator) {
-		super.setBeanGenerator(beanGenerator);
-
 	}
 }

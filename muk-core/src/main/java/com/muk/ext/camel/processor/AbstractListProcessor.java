@@ -16,19 +16,23 @@
  *******************************************************************************/
 package com.muk.ext.camel.processor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.RuntimeCamelException;
 
 /**
- * Basic framework for all processors.
+ * Basic framework for all processors with list return types.
  *
  * @param <BodyType>
  *            The expected type of the in message.
+ * @param <ListType>
+ *            The generic list type to return.
  * @param <ReturnType>The
  *            return type of the result provided to the out message.
  */
-public abstract class AbstractProcessor<BodyType, ReturnType> implements Processor {
+public abstract class AbstractListProcessor<BodyType, ReturnType> implements Processor {
 
 	/**
 	 * Force error for QA
@@ -38,7 +42,7 @@ public abstract class AbstractProcessor<BodyType, ReturnType> implements Process
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		// LOG.info("Entering: " + this.getClass().getName());
-		ReturnType result = null;
+		List<ReturnType> result = null;
 
 		if (Boolean.TRUE.equals(exchange.getIn().getHeader("killSwitch", Boolean.class))) {
 			result = forceFail(exchange);
@@ -74,12 +78,8 @@ public abstract class AbstractProcessor<BodyType, ReturnType> implements Process
 		}
 	}
 
-	protected ReturnType createResponse() {
-		try {
-			return getReturnClass().newInstance();
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw new RuntimeCamelException("Failed response type creation.", e);
-		}
+	protected List<ReturnType> createResponse() {
+		return new ArrayList<ReturnType>();
 	}
 
 	public boolean isKillSwitch() {
@@ -90,17 +90,14 @@ public abstract class AbstractProcessor<BodyType, ReturnType> implements Process
 		this.killSwitch = killSwitch;
 	}
 
-	protected abstract ReturnType forceFail(Exchange exchange);
+	protected abstract List<ReturnType> forceFail(Exchange exchange);
 
 	protected abstract Class<? extends BodyType> getBodyClass();
 
-	protected abstract Class<? extends ReturnType> getReturnClass();
-
-	protected abstract ReturnType handleExchange(BodyType body, Exchange exchange) throws Exception;
+	protected abstract List<ReturnType> handleExchange(BodyType body, Exchange exchange) throws Exception;
 
 	protected abstract boolean propagateHeaders();
 
 	protected abstract boolean propagateAttachments();
-
 
 }

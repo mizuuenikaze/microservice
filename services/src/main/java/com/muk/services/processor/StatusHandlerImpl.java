@@ -22,10 +22,10 @@ import org.apache.camel.Exchange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.muk.ext.core.json.RestReply;
 import com.muk.ext.status.ProcessStatus;
 import com.muk.ext.status.Status;
 import com.muk.services.api.StatusHandler;
+import com.muk.services.exchange.RestConstants;
 
 public class StatusHandlerImpl implements StatusHandler {
 	private static final Logger LOG = LoggerFactory.getLogger(StatusHandlerImpl.class);
@@ -46,20 +46,20 @@ public class StatusHandlerImpl implements StatusHandler {
 	@Override
 	public void logAggregateProcessStatus(List<ProcessStatus> groupedStatuses) {
 		if (groupedStatuses != null && !groupedStatuses.isEmpty()) {
-			ProcessStatus status = groupedStatuses.get(groupedStatuses.size() - 1);
+			final ProcessStatus status = groupedStatuses.get(groupedStatuses.size() - 1);
 			logProcessStatus(status);
 		}
 	}
 
 	@Override
 	public void logRestStatus(Exchange exchange) {
-		String message = exchange.getIn().getBody(RestReply.class).getMessage();
-		Integer code = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+		final String message = exchange.getIn().getHeader(RestConstants.Headers.outOfBandMessage, String.class);
+		final Integer code = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
 
 		if (code > org.restlet.data.Status.REDIRECTION_MULTIPLE_CHOICES.getCode()) {
-			LOG.error(message);
+			LOG.error(message != null ? message : "generic success");
 		} else {
-			LOG.info(message);
+			LOG.info(message != null ? message : "generic failure");
 		}
 	}
 }

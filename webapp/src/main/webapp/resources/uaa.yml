@@ -194,6 +194,7 @@ oauth:
       scope: openid
       authorities: password.write,scim.userids,uaa.resource,scim.read
       id: mukapi
+      secret: umkay!
       resource-ids: none
       redirect-uri: http://localhost:8082/proxied/api/admin/tokenLogin
 

@@ -42,7 +42,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
-import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -56,18 +55,12 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.muk.ext.core.AbstractBeanGenerator;
 import com.muk.ext.core.ApplicationState;
 import com.muk.ext.core.ApplicationStateImpl;
-import com.muk.ext.core.api.Dummy;
-import com.muk.ext.core.json.HateoasLink;
-import com.muk.ext.core.json.RestReply;
-import com.muk.ext.core.json.model.oauth.TokenResponse;
 import com.muk.ext.security.KeystoreService;
 import com.muk.ext.security.NonceService;
 import com.muk.ext.security.impl.DefaultKeystoreService;
 import com.muk.ext.security.impl.DefaultNonceService;
-import com.muk.ext.status.ProcessStatus;
 import com.muk.services.api.BarcodeService;
 import com.muk.services.api.CachingOauthUserDetailsService;
 import com.muk.services.api.ConfigurationService;
@@ -84,20 +77,19 @@ import com.muk.services.csv.CsvDocumentCache;
 import com.muk.services.csv.DefaultCsvDocumentCache;
 import com.muk.services.dataimport.DefaultCsvImportService;
 import com.muk.services.dataimport.ImportTranslationFactoryStrategy;
-import com.muk.services.exchange.CsvImportStatus;
 import com.muk.services.exchange.ServiceConstants;
 import com.muk.services.processor.BearerTokenAuthPrincipalProcessor;
 import com.muk.services.processor.CsvQueueDemultiplexerImpl;
 import com.muk.services.processor.DataTranslationProcessor;
 import com.muk.services.processor.NopProcessor;
 import com.muk.services.processor.QueueDemultiplexerImpl;
+import com.muk.services.processor.RefreshTokenProcessor;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
 import com.muk.services.processor.TokenLoginProcessor;
 import com.muk.services.processor.api.CommentApiProcessor;
+import com.muk.services.processor.api.FeatureApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
-import com.muk.services.processor.api.SettingApiGetProcessor;
-import com.muk.services.processor.api.ThingApiGetProcessor;
 import com.muk.services.security.BearerTokenUserDetailsService;
 import com.muk.services.security.EhCacheBasedTokenCache;
 import com.muk.services.strategy.TranslationFactoryStrategy;
@@ -195,87 +187,6 @@ public class ServiceConfig {
 		return csvDocumentCache;
 	}
 
-	@Bean(name = { "processStatus" })
-	@Scope("prototype")
-	public ProcessStatus processStatus() {
-		return new ProcessStatus();
-	}
-
-	@Bean(name = { "csvImportStatus" })
-	@Scope("prototype")
-	public CsvImportStatus csvImportStatus() {
-		return new CsvImportStatus();
-	}
-
-	@Bean(name = { "tokenResponse" })
-	@Scope("prototype")
-	public TokenResponse tokenResponse() {
-		return new TokenResponse();
-	}
-
-	@Bean(name = { "hateoasLink" })
-	@Scope("prototype")
-	public HateoasLink hateoasLink() {
-		return new HateoasLink();
-	}
-
-	/* bean creators */
-
-	@Bean(name = { "processBeanGenerator" })
-	public AbstractBeanGenerator<ProcessStatus> processBeanGenerator() {
-		return new AbstractBeanGenerator<ProcessStatus>() {
-
-			@Override
-			public ProcessStatus createResponse() {
-				return processStatus();
-			}
-		};
-	}
-
-	@Bean(name = { "processCsvImportBeanGenerator" })
-	public AbstractBeanGenerator<CsvImportStatus> csvImportBeanGenerator() {
-		return new AbstractBeanGenerator<CsvImportStatus>() {
-
-			@Override
-			public CsvImportStatus createResponse() {
-				return csvImportStatus();
-			}
-		};
-	}
-
-	@Bean(name = { "restBeanGenerator" })
-	public AbstractBeanGenerator<RestReply> restBeanGenerator() {
-		return new AbstractBeanGenerator<RestReply>() {
-
-			@Override
-			public RestReply createResponse() {
-				return new RestReply();
-			}
-		};
-	}
-
-	@Bean(name = { "tokenResponseBeanGenerator" })
-	public AbstractBeanGenerator<TokenResponse> tokenResponseBeanGenerator() {
-		return new AbstractBeanGenerator<TokenResponse>() {
-
-			@Override
-			public TokenResponse createResponse() {
-				return tokenResponse();
-			}
-		};
-	}
-
-	@Bean(name = { "dummyBeanGenerator" })
-	public AbstractBeanGenerator<Dummy> dummyBeanGenerator() {
-		return new AbstractBeanGenerator<Dummy>() {
-
-			@Override
-			public Dummy createResponse() {
-				return new Dummy();
-			}
-		};
-	}
-
 	/* camel processors */
 	@Bean(name = { "queueDemux" })
 	public QueueDemultiplexer queueDemultiplexer() {
@@ -297,6 +208,11 @@ public class ServiceConfig {
 		return new BearerTokenAuthPrincipalProcessor();
 	}
 
+	@Bean
+	public Processor refreshTokenProcessor() {
+		return new RefreshTokenProcessor();
+	}
+
 	@Bean(name = { "routeActionProcessor" })
 	public Processor routeActionProcessor() {
 		return new RouteActionProcessor();
@@ -305,16 +221,6 @@ public class ServiceConfig {
 	@Bean(name = { "nopProcessor" })
 	public Processor nopProcessor() {
 		return new NopProcessor();
-	}
-
-	@Bean(name = { "settingApiGetProcessor" })
-	public Processor settingApiGetProcessor() {
-		return new SettingApiGetProcessor();
-	}
-
-	@Bean(name = { "thingApiGetProcessor" })
-	public Processor thingApiGetProcessor() {
-		return new ThingApiGetProcessor();
 	}
 
 	@Bean(name = { "commentApiProcessor" })
@@ -335,6 +241,11 @@ public class ServiceConfig {
 	@Bean(name = { "pingApiProcessor" })
 	public Processor pingApiProcessor() {
 		return new PingApiProcessor();
+	}
+
+	@Bean
+	public Processor featureApiProcessor() {
+		return new FeatureApiProcessor();
 	}
 
 	/* Strategies */
@@ -529,8 +440,8 @@ public class ServiceConfig {
 		reqConfig.setCircularRedirectsAllowed(false);
 		reqConfig.setRedirectsEnabled(false);
 
-		final HttpClientBuilder builder = HttpClientBuilder.create().disableRedirectHandling().setConnectionManager(manager)
-				.setDefaultRequestConfig(reqConfig.build());
+		final HttpClientBuilder builder = HttpClientBuilder.create().disableRedirectHandling()
+				.setConnectionManager(manager).setDefaultRequestConfig(reqConfig.build());
 
 		staleConnectionExecutor().execute(new IdleConnectionMonitor(manager));
 

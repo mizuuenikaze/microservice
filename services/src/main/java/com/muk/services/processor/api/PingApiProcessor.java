@@ -16,30 +16,22 @@
  *******************************************************************************/
 package com.muk.services.processor.api;
 
-import javax.inject.Inject;
-
 import org.apache.camel.Exchange;
 import org.restlet.data.Status;
-import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.muk.ext.camel.processor.AbstractRestProcessor;
-import com.muk.ext.core.AbstractBeanGenerator;
 import com.muk.ext.core.json.RestReply;
+import com.muk.services.processor.AbstractRestProcessor;
 
 public class PingApiProcessor extends AbstractRestProcessor<Object, RestReply> {
 
 	@Override
-	protected RestReply forceFail(Exchange exchange) {
-		exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE,
-				Integer.valueOf(Status.SERVER_ERROR_INTERNAL.getCode()));
-		final RestReply reply = createResponse();
-		reply.setMessage("Force Fail");
-		return reply;
+	protected Class<? extends Object> getBodyClass() {
+		return Object.class;
 	}
 
 	@Override
-	protected Class<? extends Object> getBodyClass() {
-		return Object.class;
+	protected Class<? extends RestReply> getReturnClass() {
+		return RestReply.class;
 	}
 
 	@Override
@@ -68,12 +60,5 @@ public class PingApiProcessor extends AbstractRestProcessor<Object, RestReply> {
 		}
 
 		return restReply;
-	}
-
-	@Inject
-	@Qualifier("restBeanGenerator")
-	@Override
-	public void setBeanGenerator(AbstractBeanGenerator<RestReply> beanGenerator) {
-		super.setBeanGenerator(beanGenerator);
 	}
 }

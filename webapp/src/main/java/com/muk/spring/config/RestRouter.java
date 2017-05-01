@@ -23,17 +23,24 @@ import org.apache.camel.model.rest.RestBindingMode;
 import org.apache.camel.model.rest.RestPropertyDefinition;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
+import org.restlet.engine.util.StringUtils;
 
 import com.muk.ext.core.json.RestReply;
-import com.muk.ext.core.json.RestThing;
 import com.muk.ext.core.json.model.UserComment;
 import com.muk.services.exchange.CamelRouteConstants;
 import com.muk.services.exchange.RestConstants;
 import com.muk.services.json.RouteAction;
+import com.muk.services.processor.api.FeatureApiProcessor;
 
 /**
  *
  * Rest configuration of camel routes.
+ *
+ * Security ---
+ * 	The backing authentication and authorization server is uaa for oauth2
+ * so we define an login endpoint and all other protected endpoints follow the same
+ * pipeline of providing a principal subject, using spring security, and handling token refreshes
+ * before doing any business logic.
  *
  */
 public class RestRouter extends SpringRouteBuilder {
@@ -93,17 +100,18 @@ public class RestRouter extends SpringRouteBuilder {
 		.bean("statusHandler", "logRestStatus");
 
 		// api
-		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class)
+		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class).consumes(MediaType.APPLICATION_JSON.getName())
 		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
-		.policy("restUserPolicy").to("direct:ping");
+		.policy("restUserPolicy").process("refreshTokenProcessor").to("direct:ping");
 
-		rest(RestConstants.Rest.apiPath).get("/thing/{id}").outType(RestThing.class)
+		rest(RestConstants.Rest.apiPath).get("/features").outTypeList(RestReply.class).consumes(MediaType.APPLICATION_JSON.getName())
 		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
-		.policy("restUserPolicy").to("direct:thingGetApi");
+		.policy("restUserPolicy").process("refreshTokenProcessor").to("direct:feature");
+
 
 		rest(RestConstants.Rest.apiPath).post("/usercomment").type(UserComment.class).outType(RestReply.class)
 		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
-		.process("authPrincipalProcessor").policy("restUserPolicy").to("direct:commentApi");
+		.process("authPrincipalProcessor").policy("restUserPolicy").process("refreshTokenProcessor").to("direct:commentApi");
 
 		// direct rest routes
 
@@ -114,9 +122,8 @@ public class RestRouter extends SpringRouteBuilder {
 		from("direct:routeConfiguration").process("routeActionProcessor").bean("statusHandler", "logRestStatus");
 
 		// api routes
-		from("direct:settingGetApi").process("settingApiGetProcessor").bean("statusHandler", "logRestStatus");
-		from("direct:thingGetApi").process("thingApiGetProcessor").bean("statusHandler", "logRestStatus");
 		from("direct:commentApi").process("commentApiProcessor").bean("statusHandler", "logRestStatus");
 		from("direct:ping").process("pingApiProcessor").bean("statusHandler", "logRestStatus");
+		from("direct:feature").process(StringUtils.firstLower(FeatureApiProcessor.class.getSimpleName())).bean("statusHandler", "logRestStatus");
 	}
 }

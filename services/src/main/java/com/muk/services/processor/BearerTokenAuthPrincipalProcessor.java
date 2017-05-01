@@ -16,16 +16,14 @@
  *******************************************************************************/
 package com.muk.services.processor;
 
-import java.util.List;
-
 import javax.security.auth.Subject;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
-import org.restlet.data.Header;
 
+import com.muk.services.exchange.RestConstants;
 import com.muk.services.security.BearerAuthenticationToken;
 
 /**
@@ -35,14 +33,12 @@ public class BearerTokenAuthPrincipalProcessor implements Processor {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		final List<Header> httpHeaders = exchange.getIn().getHeader("org.restlet.http.headers", List.class);
 
-		String bearerToken = "badToken";
-		for (final Header header : httpHeaders) {
-			if (header.getName().toLowerCase().equals(HttpHeaders.AUTHORIZATION.toLowerCase())) {
-				bearerToken = StringUtils.substringAfter(header.getValue(), "Bearer ");
-				break;
-			}
+		String bearerToken = RestConstants.Rest.anonymousToken;
+
+		if (exchange.getIn().getHeader(HttpHeaders.AUTHORIZATION) != null) {
+			bearerToken = StringUtils
+					.substringAfter(exchange.getIn().getHeader(HttpHeaders.AUTHORIZATION, String.class), "Bearer ");
 		}
 
 		// create an Authentication object
