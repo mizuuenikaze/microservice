@@ -1,5 +1,5 @@
 dnl Process this file with autoconf
-AC_INIT([muksvc], [1.2.1])
+AC_INIT([muksvc], [1.2.2])
 AC_PREREQ(2.69)
 AM_INIT_AUTOMAKE([foreign nostdinc])
 dnl program checks
