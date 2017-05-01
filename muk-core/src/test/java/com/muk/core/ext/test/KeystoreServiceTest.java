@@ -44,7 +44,14 @@ public class KeystoreServiceTest {
 		keystoreService.setKeystorePass(System.getProperty("custom.application.keystorepass"));
 	}
 
-	@Test
+	/**
+	 * This keystore test is not ideal since it goes to an actual keystore on the target filesystem.
+	 * This will not pass for package managers that run tests in a sandbox.
+	 *
+	 * This test is used to setup a default keystore and can be used locally, but to do not
+	 * check in this enabled test.
+	 */
+	//@Test
 	public void addSharedSecretToKeystoreTest() throws Exception {
 
 		for (final Map.Entry<String, String> entry : allApplications.entrySet()) {
