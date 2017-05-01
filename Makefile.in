@@ -623,7 +623,7 @@ appDebug:
 	exec ./gradlew appDebug --no-daemon -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 install-exec-local:
-	$(am__untar) webapp/build/distributions/$(PACKAGE)-$(VERSION).tar -C $(DESTDIR)$(prefix)/
+	cat webapp/build/distributions/$(PACKAGE)-$(VERSION).tar | $(am__untar) -C $(DESTDIR)$(prefix)/
 	$(LN_S) $(DESTDIR)$(prefix)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE) $(DESTDIR)$(bindir)/$(PACKAGE)
 	$(SED) -i \
 		-e "/^CLASSPATH/ s|\(^.*\)\$$APP_HOME|\1\$$REVERT_HOME|" \
