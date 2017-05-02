@@ -136,7 +136,7 @@ task microsvc (type: Zip, dependsOn: warex) {
 /* --------- Distribution custom tasks ------------------------ */
 task createStartScripts (type: CreateStartScripts, dependsOn: microsvc) {
 	outputDir = file("$buildDir/scripts")
-	applicationName = 'muksvc'
+	applicationName = 'microservice'
 	mainClassName = project.ext.mainClassName
 	defaultJvmOpts = applicationDefaultJvmArgs
 	//This must be modified buy the ebuild or other package management tool or manually.
@@ -144,7 +144,7 @@ task createStartScripts (type: CreateStartScripts, dependsOn: microsvc) {
 }
 
 distributions {
-	muksvc {
+	microservice {
 		baseName = 'microservice'
 	}
 }
@@ -165,12 +165,12 @@ childSpec.from(project.file("src/dist"));
 childSpec.with(libChildSpec);
 childSpec.with(binChildSpec);
 
-distributions.muksvc.getContents().with(childSpec);
+distributions.microservice.getContents().with(childSpec);
 
 
 distTar.enabled = false
 distZip.enabled = false
-muksvcDistZip.enabled = false
+microserviceDistZip.enabled = false
 
 /* ----------- task depends ---------------*/
 check.dependsOn integrationTest
