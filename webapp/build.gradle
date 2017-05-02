@@ -145,7 +145,7 @@ task createStartScripts (type: CreateStartScripts, dependsOn: microsvc) {
 
 distributions {
 	muksvc {
-		baseName = 'muksvc'
+		baseName = 'microservice'
 	}
 }
 

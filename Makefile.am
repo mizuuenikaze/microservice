@@ -4,7 +4,7 @@
 
 
 epack:
-	./gradlew epack -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	./gradlew epack --no-daemon --gradle-user-home="WORKDIR" -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 build:
 	./gradlew build -x test -x integrationtest -Penv=$(CONF_ENV) -Pv=$(VERSION)
