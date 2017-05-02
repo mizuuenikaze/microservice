@@ -626,7 +626,7 @@ install-exec-local:
 	cat webapp/build/distributions/$(PACKAGE)-$(VERSION).tar | $(am__untar) -C $(DESTDIR)$(prefix:/%=%)/
 	$(SED) -i \
 		-e "/^CLASSPATH/ s|\$$APP_HOME/lib|$(jettydir)|g" \
-		-e "/^CLASSPATH/ s|\([:,]*\)[^:,]\(muk-microservices\.jar\)\([:,]*\)|\1\$$APP_HOME/lib/\2\3|" $(DESTDIR)$(prefix:/%=%)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
+		-e "/^CLASSPATH/ s|\([:,]*\)[^:,]\(muk-microservices.*jar\)\([:,]*\)|\1\$$APP_HOME/lib/\2\3|" $(DESTDIR)$(prefix:/%=%)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
 @DEBUG_TRUE@all-local: build
 @DEBUG_FALSE@all-local: epack
 
