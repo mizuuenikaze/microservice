@@ -4,7 +4,7 @@
 
 
 epack:
-	./gradlew epack -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	./gradlew epack --no-daemon --gradle-user-home="WORKDIR" -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 build:
 	./gradlew build -x test -x integrationtest -Penv=$(CONF_ENV) -Pv=$(VERSION)
@@ -25,12 +25,10 @@ appDebug:
 	exec ./gradlew appDebug --no-daemon -Penv=$(CONF_ENV) -Pv=$(VERSION)
 
 install-exec-local:
-	$(am__untar) webapp/distributions/$(PACKAGE)-$(VERSION).tar -C $(DESTDIR)$(prefix)/
-	$(LN_S) $(DESTDIR)$(prefix)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE) $(DESTDIR)$(bindir)/$(PACKAGE)
+	cat webapp/build/distributions/$(PACKAGE)-$(VERSION).tar | $(am__untar) -C $(DESTDIR)$(prefix:/%=%)/
 	$(SED) -i \
-		-e "/^CLASSPATH/ s|\(^.*\)\$$APP_HOME|\1\$$REVERT_HOME|" \
 		-e "/^CLASSPATH/ s|\$$APP_HOME/lib|$(jettydir)|g" \
-		-e "/^CLASSPATH/ s|REVERT|APP|g" $(DESTDIR)$(prefix)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
+		-e "/^CLASSPATH/ s|\([:,]*\)[^:,]\(muk-microservices.*jar\)\([:,]*\)|\1\$$APP_HOME/lib/\2\3|" $(DESTDIR)$(prefix:/%=%)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
 
 if DEBUG
 CONF_ENV = dev
