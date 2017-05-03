@@ -30,7 +30,7 @@ import org.springframework.web.WebApplicationInitializer;
  * Replaces the web.xml configuration.
  *
  */
-@Order(4)
+@Order(3)
 public class SwaggerWebApplicationInitializer implements WebApplicationInitializer {
 	private static final Logger LOG = LoggerFactory.getLogger(SwaggerWebApplicationInitializer.class);
 

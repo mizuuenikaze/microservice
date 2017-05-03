@@ -60,7 +60,7 @@ public class Router extends SpringRouteBuilder {
 		jacksonJMSFormats.get("csvRecord").setAllowJmsType(true);
 
 		// notification handling
-		from("direct:mukEvent").bean("queueDemux", "routeToQueue")
+		from("direct:intent").bean("queueDemux", "routeToQueue")
 		.idempotentConsumer(header(NotificationEvent.Keys.mukEventId),
 				ExpiringIdempotentRepository.expiringIdempotentRepository(200, 20000l))
 		.marshal(jacksonJMSFormats.get("mukEvent")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
@@ -119,18 +119,5 @@ public class Router extends SpringRouteBuilder {
 		.simple("${body.status} == ${type:com.muk.ext.status.Status.ERROR}").transform()
 		.simple("${body.record}").marshal(csvFormat)
 		.toF("%s?fileName=processErrors.log&fileExist=Append", configurationService.getSftpTarget());
-
-		// frequent processing
-		fromF("timer://nearRealTime?fixedRate=false&period=%s", configurationService.getNearRealTimeInterval())
-		.routeId(CamelRouteConstants.RouteIds.nearRealTime).process("nopProcessor").end();
-
-		// medium frequency processing
-		fromF("timer://mediumPeriodic?fixedRate=false&period=%s", configurationService.getMediumInterval())
-		.routeId(CamelRouteConstants.RouteIds.mediumPeriodic).process("nopProcessor");
-
-		// potentially poll for notifications every 3 minutes
-		fromF("timer://notificationPollTimer?fixedRate=false&period=3m").noAutoStartup()
-		.routeId(CamelRouteConstants.RouteIds.notificationPoll).process("nopProcessor")
-		.split(body()).to("direct:mukEvent").end();
 	}
 }

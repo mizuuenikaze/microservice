@@ -26,21 +26,22 @@ import org.restlet.data.MediaType;
 import org.restlet.engine.util.StringUtils;
 
 import com.muk.ext.core.json.RestReply;
-import com.muk.ext.core.json.model.UserComment;
 import com.muk.services.exchange.CamelRouteConstants;
 import com.muk.services.exchange.RestConstants;
 import com.muk.services.json.RouteAction;
+import com.muk.services.processor.RefreshTokenProcessor;
+import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.api.FeatureApiProcessor;
+import com.muk.services.processor.api.PingApiProcessor;
 
 /**
  *
  * Rest configuration of camel routes.
  *
- * Security ---
- * 	The backing authentication and authorization server is uaa for oauth2
- * so we define an login endpoint and all other protected endpoints follow the same
- * pipeline of providing a principal subject, using spring security, and handling token refreshes
- * before doing any business logic.
+ * Security --- The backing authentication and authorization server is uaa for
+ * oauth2 so we define an login endpoint and all other protected endpoints
+ * follow the same pipeline of providing a principal subject, using spring
+ * security, and handling token refreshes before doing any business logic.
  *
  */
 public class RestRouter extends SpringRouteBuilder {
@@ -74,56 +75,48 @@ public class RestRouter extends SpringRouteBuilder {
 		.dataFormatProperty("json.out.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
 		.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(false)
 		.setCorsHeaders(corsHeaders);
-		/*
-		 * rest(RestConstants.Rest.adminPath).verb("patch",
-		 * "/system").type(SystemAction.class).outType(RestReply.class)
-		 * .consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.
-		 * APPLICATION_JSON.getName()).route()
-		 * .process("authPrincipalProcessor").policy("restUserPolicy").to(
-		 * "direct:systemConfiguration");
-		 */
+
 		// notification endpoint
-		rest(RestConstants.Rest.notificationPath).post().bindingMode(RestBindingMode.off)
+		rest(RestConstants.Rest.apiPath).post("/intents").bindingMode(RestBindingMode.off)
 		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
 		.routeId(CamelRouteConstants.RouteIds.asyncNotificationPush).process("authPrincipalProcessor")
-		.policy("restUserPolicy").to("direct:mukEvent");
+		.policy("restUserPolicy").process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName()))
+		.to("direct:intent");
 
 		// camel route intents
 		rest(RestConstants.Rest.adminPath).post("/routes/changeRouteState").type(RouteAction.class)
 		.outType(RestReply.class).consumes(MediaType.APPLICATION_JSON.getName())
 		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
-		.policy("restUserPolicy").to("direct:routeConfiguration");
+		.policy("restUserPolicy").process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName()))
+		.to("direct:routeConfiguration");
 
 		// oauth2 token users
 		rest(RestConstants.Rest.adminPath).get("/tokenLogin").outType(RestReply.class)
-		.produces(MediaType.APPLICATION_JSON.getName()).route().process("tokenLoginProcessor")
+		.produces(MediaType.APPLICATION_JSON.getName()).route()
+		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName()))
 		.bean("statusHandler", "logRestStatus");
 
 		// api
-		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class).consumes(MediaType.APPLICATION_JSON.getName())
-		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
-		.policy("restUserPolicy").process("refreshTokenProcessor").to("direct:ping");
-
-		rest(RestConstants.Rest.apiPath).get("/features").outTypeList(RestReply.class).consumes(MediaType.APPLICATION_JSON.getName())
-		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
-		.policy("restUserPolicy").process("refreshTokenProcessor").to("direct:feature");
-
-
-		rest(RestConstants.Rest.apiPath).post("/usercomment").type(UserComment.class).outType(RestReply.class)
+		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class)
 		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
-		.process("authPrincipalProcessor").policy("restUserPolicy").process("refreshTokenProcessor").to("direct:commentApi");
+		.process("authPrincipalProcessor").policy("restUserPolicy")
+		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName())).to("direct:ping");
+
+		rest(RestConstants.Rest.apiPath).get("/features").outTypeList(RestReply.class)
+		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
+		.process("authPrincipalProcessor").policy("restUserPolicy")
+		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName())).to("direct:feature");
 
 		// direct rest routes
 
-		// system actions
-		from("direct:systemConfiguration").process("nopProcessor").bean("statusHandler", "logRestStatus");
-
 		// camel route management
-		from("direct:routeConfiguration").process("routeActionProcessor").bean("statusHandler", "logRestStatus");
+		from("direct:routeConfiguration").process(StringUtils.firstLower(RouteActionProcessor.class.getSimpleName()))
+		.bean("statusHandler", "logRestStatus");
 
 		// api routes
-		from("direct:commentApi").process("commentApiProcessor").bean("statusHandler", "logRestStatus");
-		from("direct:ping").process("pingApiProcessor").bean("statusHandler", "logRestStatus");
-		from("direct:feature").process(StringUtils.firstLower(FeatureApiProcessor.class.getSimpleName())).bean("statusHandler", "logRestStatus");
+		from("direct:ping").process(StringUtils.firstLower(PingApiProcessor.class.getSimpleName()))
+		.bean("statusHandler", "logRestStatus");
+		from("direct:feature").process(StringUtils.firstLower(FeatureApiProcessor.class.getSimpleName()))
+		.bean("statusHandler", "logRestStatus");
 	}
 }

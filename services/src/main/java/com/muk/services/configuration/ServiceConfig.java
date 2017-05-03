@@ -87,7 +87,6 @@ import com.muk.services.processor.RefreshTokenProcessor;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
 import com.muk.services.processor.TokenLoginProcessor;
-import com.muk.services.processor.api.CommentApiProcessor;
 import com.muk.services.processor.api.FeatureApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
 import com.muk.services.security.BearerTokenUserDetailsService;
@@ -203,7 +202,7 @@ public class ServiceConfig {
 		return new StatusHandlerImpl();
 	}
 
-	@Bean(name = { "authPrincipalProcessor" })
+	@Bean
 	public Processor authPrincipalProcessor() {
 		return new BearerTokenAuthPrincipalProcessor();
 	}
@@ -213,22 +212,17 @@ public class ServiceConfig {
 		return new RefreshTokenProcessor();
 	}
 
-	@Bean(name = { "routeActionProcessor" })
+	@Bean
 	public Processor routeActionProcessor() {
 		return new RouteActionProcessor();
 	}
 
-	@Bean(name = { "nopProcessor" })
+	@Bean
 	public Processor nopProcessor() {
 		return new NopProcessor();
 	}
 
-	@Bean(name = { "commentApiProcessor" })
-	public Processor commentApiProcessor() {
-		return new CommentApiProcessor();
-	}
-
-	@Bean(name = { "tokenLoginProcessor" })
+	@Bean
 	public Processor tokenLoginProcessor() {
 		return new TokenLoginProcessor();
 	}
@@ -238,7 +232,7 @@ public class ServiceConfig {
 		return new DataTranslationProcessor();
 	}
 
-	@Bean(name = { "pingApiProcessor" })
+	@Bean
 	public Processor pingApiProcessor() {
 		return new PingApiProcessor();
 	}

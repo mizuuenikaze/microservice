@@ -24,22 +24,41 @@ import org.restlet.ext.spring.SpringServerServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
-import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.AbstractContextLoaderInitializer;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+
+import com.muk.services.configuration.CachingConfig;
+import com.muk.services.configuration.ServiceConfig;
 
 /**
  * Replaces the web.xml configuration.
  *
  */
-@Order(3)
-public class RestletWebApplicationInitializer implements WebApplicationInitializer {
+@Order(2)
+public class RestletWebApplicationInitializer extends AbstractContextLoaderInitializer {
 	private static final Logger LOG = LoggerFactory.getLogger(RestletWebApplicationInitializer.class);
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
 		LOG.info("Starting restlet servlet...");
+		super.onStartup(servletContext);
+
 		final ServletRegistration.Dynamic restletDispatcher = servletContext.addServlet("RestletServlet",
 				SpringServerServlet.class);
 		restletDispatcher.addMapping("/api/*");
 		restletDispatcher.setInitParameter("org.restlet.component", "RestletComponent");
+		restletDispatcher.setAsyncSupported(true);
 	}
+
+	@Override
+	protected WebApplicationContext createRootApplicationContext() {
+
+		final AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
+		rootAppContext.register(new Class<?>[] { AppRootConfig.class, CachingConfig.class, ServiceConfig.class,
+			SpringSecurityConfig.class, CamelConfig.class });
+		return rootAppContext;
+
+	}
+
 }

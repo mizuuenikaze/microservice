@@ -38,8 +38,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configurers.provisioning.InMemoryUserDetailsManagerConfigurer;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -74,20 +72,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 
 			authBuilder.withUser(principalParts[0]).password(principalParts[1]).roles("USER");
 		}
-	}
-
-	@Override
-	public void configure(WebSecurity web) throws Exception {
-		web.ignoring().antMatchers("/resources/**");
-	}
-
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-
-		http.authorizeRequests().antMatchers("/view/ext/**").authenticated().and().formLogin().and().httpBasic();
-
-		http.authorizeRequests().antMatchers("/view/embed/**").permitAll().and().csrf().disable().headers().disable();
-
 	}
 
 	@Bean(name = "camelAuthenticationManager")

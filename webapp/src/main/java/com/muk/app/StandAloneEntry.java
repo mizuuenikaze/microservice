@@ -46,7 +46,7 @@ import org.springframework.web.filter.DelegatingFilterProxy;
 
 import com.muk.spring.config.RestletWebApplicationInitializer;
 import com.muk.spring.config.SpringSecurityWebApplicationInitializer;
-import com.muk.spring.config.SpringWebApplicationInitializer;
+import com.muk.spring.config.SwaggerWebApplicationInitializer;
 
 /**
  *
@@ -138,8 +138,8 @@ public class StandAloneEntry {
 						final ClassInheritanceMap map = new ClassInheritanceMap();
 						final ConcurrentHashSet<String> set = new ConcurrentHashSet<>();
 						set.add(SpringSecurityWebApplicationInitializer.class.getName());
-						set.add(SpringWebApplicationInitializer.class.getName());
 						set.add(RestletWebApplicationInitializer.class.getName());
+						set.add(SwaggerWebApplicationInitializer.class.getName());
 						map.put(WebApplicationInitializer.class.getName(), set);
 						context.setAttribute(CLASS_INHERITANCE_MAP, map);
 						_classInheritanceHandler = new ClassInheritanceHandler(map);
