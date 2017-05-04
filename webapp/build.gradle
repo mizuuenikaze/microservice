@@ -129,6 +129,10 @@ task warex (type: Copy) {
 			include 'log4j*.jar'
 			include 'javax.servlet-api*.jar'
 
+			into "$buildDir/appLibs"
+		}
+
+		copy {
 			from "$buildDir/exploded/WEB-INF/classes"
 			include 'log4j.xml'
 			
