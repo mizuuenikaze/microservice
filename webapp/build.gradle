@@ -119,7 +119,7 @@ task warex (type: Copy) {
 			include 'camel-core*.jar'
 			include 'camel-spring-2*.jar'
 			include 'camel-spring-javaconfig*.jar'
-			include 'sprint-context*.jar'
+			include 'spring-context*.jar'
 			include 'slf4j*.jar'
 			include 'log4j*.jar'
 			
