@@ -39,7 +39,7 @@ else
 CONF_ENV = prod
 all-local: epack
 jettydir = /usr/local/share/jetty-9
-jetty_DATA = $(wildcard webapp/build/appLibs/*)
+jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
 endif
 
 .PHONY: build eclipse properties epack appRun appDebug
