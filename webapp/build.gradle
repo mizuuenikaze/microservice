@@ -123,6 +123,7 @@ task warex (type: Copy) {
 			include 'spring-context*.jar'
 			include 'spring-beans*.jar'
 			include 'spring-aop*.jar'
+			include 'spring-expression*.jar'
 			include 'commons-logging*.jar'
 			include 'slf4j*.jar'
 			include 'log4j*.jar'
