@@ -27,8 +27,9 @@ appDebug:
 install-exec-local:
 	cat webapp/build/distributions/$(PACKAGE)-$(VERSION).tar | $(am__untar) -C $(DESTDIR)$(prefix:/%=%)/
 	$(SED) -i \
+		-e "/^CLASSPATH/ s|\(\$$APP_HOME/lib\)\(/muk-microservices-[0-9\.]*\.jar\)|REVERT\2|" \
 		-e "/^CLASSPATH/ s|\$$APP_HOME/lib|$(jettydir)|g" \
-		-e "/^CLASSPATH/ s|\([:,]*\)[^:,]*\(muk-microservices-[0-9\.]*\.jar\)|\1\$$APP_HOME/lib/\2|" $(DESTDIR)$(prefix:/%=%)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
+		-e "/^CLASSPATH/ s|REVERT|\$$APP_HOME/lib|" $(DESTDIR)$(prefix:/%=%)/$(PACKAGE)-$(VERSION)/bin/$(PACKAGE)
 
 if DEBUG
 CONF_ENV = dev
