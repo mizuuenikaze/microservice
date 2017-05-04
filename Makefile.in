@@ -247,7 +247,7 @@ top_srcdir = @top_srcdir@
 @DEBUG_FALSE@CONF_ENV = prod
 @DEBUG_TRUE@CONF_ENV = dev
 @DEBUG_FALSE@jettydir = /usr/local/share/jetty-9
-@DEBUG_FALSE@jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
+@DEBUG_FALSE@jetty_DATA = $(wildcard webapp/build/appLibs/*)
 all: all-am
 
 .SUFFIXES:
