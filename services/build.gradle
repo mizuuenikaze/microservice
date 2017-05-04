@@ -28,8 +28,6 @@ dependencies {
 	compile 'org.springframework.security:spring-security-core:4.2.2.RELEASE'
 	compile 'org.ehcache:ehcache:3.3.1'
 	compile 'javax.cache:cache-api:1.0.0'
-
-	compile 'javax.servlet:javax.servlet-api:4.0.0-b05'
 }
 
 task jarSources(type:Jar) {

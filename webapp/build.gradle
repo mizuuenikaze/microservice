@@ -114,10 +114,17 @@ task warex (type: Copy) {
 					include(name: 'asm*.jar')
 				}
 				patternset() {
-					include(name: 'javax.*-api*.jar')
+					include(name: 'javax.*annotation-api*.jar')
 				}
 			}
 		}
+
+		copy {
+			from "$buildDir/exploded/WEB-INF/lib"
+			include 'camel-core*.jar', 'camel-spring-javaconfig*.jar', 'slf4j*.jar', 'log4j*.jar'
+			into "$buildDir/appLibs"
+		}
+
 		jar.manifest {
 			attributes ('Implementation-Title': 'MUK micro services')
 			from sharedManifest

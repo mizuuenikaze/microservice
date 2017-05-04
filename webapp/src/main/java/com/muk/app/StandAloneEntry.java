@@ -17,11 +17,8 @@
 package com.muk.app;
 
 import java.io.IOException;
-import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
-
-import javax.servlet.DispatcherType;
 
 import org.apache.camel.main.MainListenerSupport;
 import org.apache.camel.main.MainSupport;
@@ -32,7 +29,6 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ErrorPageErrorHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.resource.Resource;
@@ -40,13 +36,6 @@ import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
-import org.springframework.web.WebApplicationInitializer;
-import org.springframework.web.filter.DelegatingFilterProxy;
-
-import com.muk.spring.config.RestletWebApplicationInitializer;
-import com.muk.spring.config.SpringSecurityWebApplicationInitializer;
-import com.muk.spring.config.SwaggerWebApplicationInitializer;
 
 /**
  *
@@ -127,38 +116,38 @@ public class StandAloneEntry {
 				contextHandler.getMetaData().setWebInfClassesDirs(classDirs);
 				contextHandler.setResourceBase("src/main/webapp");
 				contextHandler.setParentLoaderPriority(true);
-
-				contextHandler.setConfigurations(new Configuration[] { new AnnotationConfiguration() {
-					@Override
-					public void preConfigure(WebAppContext context) throws Exception {
-						super.preConfigure(context);
-
-						// pre-populate class map since subclasses are
-						// skipped.
-						final ClassInheritanceMap map = new ClassInheritanceMap();
-						final ConcurrentHashSet<String> set = new ConcurrentHashSet<>();
-						set.add(SpringSecurityWebApplicationInitializer.class.getName());
-						set.add(RestletWebApplicationInitializer.class.getName());
-						set.add(SwaggerWebApplicationInitializer.class.getName());
-						map.put(WebApplicationInitializer.class.getName(), set);
-						context.setAttribute(CLASS_INHERITANCE_MAP, map);
-						_classInheritanceHandler = new ClassInheritanceHandler(map);
-					}
-				} });
 			} else {
 				LOG.info("PROD MODDE...running from distribution artifacts.");
 				contextHandler.setParentLoaderPriority(false);
-
-				contextHandler.setConfigurations(new Configuration[] { new AnnotationConfiguration() });
+				contextHandler.setWar(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 			}
+
+			contextHandler.setConfigurations(new Configuration[] { new AnnotationConfiguration() {
+				@Override
+				public void preConfigure(WebAppContext context) throws Exception {
+					super.preConfigure(context);
+					context.setLogUrlOnStart(true);
+
+					// pre-populate class map since subclasses are
+					// skipped.
+					final ClassInheritanceMap map = new ClassInheritanceMap();
+					final ConcurrentHashSet<String> set = new ConcurrentHashSet<>();
+					set.add("com.muk.spring.config.SpringSecurityWebApplicationInitializer");
+					set.add("com.muk.spring.config.RestletWebApplicationInitializer");
+					set.add("com.muk.spring.config.SwaggerWebApplicationInitializer");
+					map.put("org.springframework.web.WebApplicationInitializer", set);
+					context.setAttribute(CLASS_INHERITANCE_MAP, map);
+					_classInheritanceHandler = new ClassInheritanceHandler(map);
+				}
+			} });
 
 			contextHandler.setServer(jettyServer);
 			contextHandler.setErrorHandler(new ErrorPageErrorHandler());
 
-			contextHandler.addFilter(
-					new FilterHolder(
-							new DelegatingFilterProxy(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME)),
-					"/*", EnumSet.allOf(DispatcherType.class));
+			//			contextHandler.addFilter(
+			//					new FilterHolder(
+			//							new DelegatingFilterProxy("springSecurityFilterChain")),
+			//					"/*", EnumSet.allOf(DispatcherType.class));
 
 			jettyServer.setHandler(contextHandler);
 
