@@ -161,7 +161,7 @@ task createStartScripts (type: CreateStartScripts, dependsOn: microsvc) {
 	mainClassName = project.ext.mainClassName
 	defaultJvmOpts = applicationDefaultJvmArgs
 	//This must be modified buy the ebuild or other package management tool or manually.
-	classpath = fileTree(dir: "$buildDir").matching { include 'appLibs/*.jar', "libs/$project.archivesBaseName*.jar" }
+	classpath = fileTree(dir: "$buildDir").matching { include 'appLibs/*, "libs/$project.archivesBaseName*.jar" }
 }
 
 distributions {
