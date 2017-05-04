@@ -119,6 +119,10 @@ public class StandAloneEntry {
 			} else {
 				LOG.info("PROD MODDE...running from distribution artifacts.");
 				contextHandler.setParentLoaderPriority(false);
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("setting war: {}",
+							this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
+				}
 				contextHandler.setWar(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 			}
 
@@ -144,11 +148,6 @@ public class StandAloneEntry {
 			contextHandler.setServer(jettyServer);
 			contextHandler.setErrorHandler(new ErrorPageErrorHandler());
 
-			//			contextHandler.addFilter(
-			//					new FilterHolder(
-			//							new DelegatingFilterProxy("springSecurityFilterChain")),
-			//					"/*", EnumSet.allOf(DispatcherType.class));
-
 			jettyServer.setHandler(contextHandler);
 
 			try
@@ -166,9 +165,11 @@ public class StandAloneEntry {
 		@Override
 		public void beforeStop(MainSupport main) {
 			try {
-				jettyServer.stop();
+				if (jettyServer != null) {
+					jettyServer.stop();
+				}
 			} catch (final Exception e) {
-				e.printStackTrace();
+				LOG.error("Failed to stop jetty server.", e);
 			}
 
 			LOG.info("Jetty stopping...");
