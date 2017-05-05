@@ -50,6 +50,7 @@
 	</logger>
 
 	<logger name="com.muk.services.processor">
+
 		<level value="ERROR" />
 	</logger>
 
@@ -64,10 +65,6 @@
 
 	<logger name="org.apache.http.client">
 		<level value="ERROR" />
-	</logger>
-
-	<logger name="org.eclipse.jetty">
-		<level value="DEBUG" />
 	</logger>
 
 	<root>
