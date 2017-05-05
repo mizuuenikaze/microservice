@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.camel.main.Main;
 import org.apache.camel.main.MainListenerSupport;
 import org.apache.camel.main.MainSupport;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
