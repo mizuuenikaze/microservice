@@ -5,7 +5,7 @@
 	xmlns:log4j='http://jakarta.apache.org/log4j/'>
 
 	<appender name="console" class="org.apache.log4j.ConsoleAppender">
-		<param name="Threshold" value="DEBUG" />
+		<param name="Threshold" value="TRACE" />
 		<layout class="org.apache.log4j.EnhancedPatternLayout">
 			<param name="ConversionPattern" value="%d{DATE} - %-5p: %t: %c:%l - %m%n" />
 		</layout>
@@ -13,7 +13,7 @@
 
 	<appender name="file" class="org.apache.log4j.RollingFileAppender">
 		<param name="append" value="true" />
-		<param name="Threshold" value="DEBUG" />
+		<param name="Threshold" value="TRACE" />
 		<param name="file" value="${custom.logging.root}/full.log" />
 		<param name="maxFileSize" value="1GB" />
 		<param name="maxBackupIndex" value="5" />
@@ -71,7 +71,7 @@
 	</logger>
 
 	<root>
-		<level value="INFO" />
+		<level value="TRACE" />
 		<appender-ref ref="console" />
 		<appender-ref ref="file" />
 		<appender-ref ref="errorFile" />
