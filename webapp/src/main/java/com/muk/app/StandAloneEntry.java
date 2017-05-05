@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.camel.main.Main;
 import org.apache.camel.main.MainListenerSupport;
 import org.apache.camel.main.MainSupport;
-import org.apache.camel.spring.javaconfig.Main;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.annotations.ClassInheritanceHandler;
 import org.eclipse.jetty.server.Connector;
@@ -72,7 +72,6 @@ public class StandAloneEntry {
 
 		// orchestrate stuff
 		main.addMainListener(eventListener);
-		main.setConfigClasses("com.muk.app.StandAloneRootConfig");
 		main.run(args);
 	}
 

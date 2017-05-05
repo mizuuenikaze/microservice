@@ -117,13 +117,6 @@ task warex (type: Copy) {
 		copy {
 			from "$buildDir/exploded/WEB-INF/lib"
 			include 'camel-core*.jar'
-			include 'spring-core*.jar'
-			include 'camel-spring-2*.jar'
-			include 'camel-spring-javaconfig*.jar'
-			include 'spring-context*.jar'
-			include 'spring-beans*.jar'
-			include 'spring-aop*.jar'
-			include 'spring-expression*.jar'
 			include 'commons-logging*.jar'
 			include 'slf4j*.jar'
 			include 'log4j*.jar'
