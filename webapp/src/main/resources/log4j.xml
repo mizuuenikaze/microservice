@@ -48,10 +48,6 @@
 	<logger name="com.muk">
 		<level value="DEBUG" />
 	</logger>
-
-	<logger name="org.springframework">
-		<level value="DEBUG" />
-	</logger>
 	
 	<logger name="com.muk.spring.config.Router" additivity="false">
 		<level value="ERROR" />
