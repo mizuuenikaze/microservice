@@ -121,7 +121,7 @@ public class StandAloneEntry {
 				contextHandler.setParentLoaderPriority(true);
 			} else {
 				LOG.info("PROD MODE...running from distribution artifacts.");
-				contextHandler.setParentLoaderPriority(true);
+				contextHandler.setParentLoaderPriority(false);
 				configurations.add(new WebInfConfiguration());
 				contextHandler.setWar(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 			}
