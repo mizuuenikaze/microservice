@@ -17,7 +17,6 @@
 package com.muk.app;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,7 +34,6 @@ import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.webapp.WebInfConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,8 +93,6 @@ public class StandAloneEntry {
 		@Override
 		public void afterStart(MainSupport main) {
 			LOG.info("Starting jetty...");
-			final List<Configuration> configurations = new ArrayList<Configuration>();
-
 			final Server jettyServer = new Server();
 			final ServerConnector scc = new ServerConnector(jettyServer);
 			scc.setPort(getHttpPort());
@@ -119,33 +115,30 @@ public class StandAloneEntry {
 				contextHandler.getMetaData().setWebInfClassesDirs(classDirs);
 				contextHandler.setResourceBase("src/main/webapp");
 				contextHandler.setParentLoaderPriority(true);
+
+				contextHandler.setConfigurations(new Configuration[] { new AnnotationConfiguration() {
+					@Override
+					public void preConfigure(WebAppContext context) throws Exception {
+						super.preConfigure(context);
+						context.setLogUrlOnStart(true);
+
+						// pre-populate class map since subclasses are
+						// skipped.
+						final ClassInheritanceMap map = new ClassInheritanceMap();
+						final ConcurrentHashSet<String> set = new ConcurrentHashSet<>();
+						set.add("com.muk.spring.config.SpringSecurityWebApplicationInitializer");
+						set.add("com.muk.spring.config.RestletWebApplicationInitializer");
+						set.add("com.muk.spring.config.SwaggerWebApplicationInitializer");
+						map.put("org.springframework.web.WebApplicationInitializer", set);
+						context.setAttribute(CLASS_INHERITANCE_MAP, map);
+						_classInheritanceHandler = new ClassInheritanceHandler(map);
+					}
+				} });
 			} else {
 				LOG.info("PROD MODDE...running from distribution artifacts.");
 				contextHandler.setParentLoaderPriority(false);
-				configurations.add(new WebInfConfiguration());
 				contextHandler.setWar(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 			}
-
-			configurations.add(new AnnotationConfiguration() {
-				@Override
-				public void preConfigure(WebAppContext context) throws Exception {
-					super.preConfigure(context);
-					context.setLogUrlOnStart(true);
-
-					// pre-populate class map since subclasses are
-					// skipped.
-					final ClassInheritanceMap map = new ClassInheritanceMap();
-					final ConcurrentHashSet<String> set = new ConcurrentHashSet<>();
-					set.add("com.muk.spring.config.SpringSecurityWebApplicationInitializer");
-					set.add("com.muk.spring.config.RestletWebApplicationInitializer");
-					set.add("com.muk.spring.config.SwaggerWebApplicationInitializer");
-					map.put("org.springframework.web.WebApplicationInitializer", set);
-					context.setAttribute(CLASS_INHERITANCE_MAP, map);
-					_classInheritanceHandler = new ClassInheritanceHandler(map);
-				}
-			});
-
-			contextHandler.setConfigurations(configurations.toArray(new Configuration[configurations.size()]));
 
 			contextHandler.setServer(jettyServer);
 			contextHandler.setErrorHandler(new ErrorPageErrorHandler());
