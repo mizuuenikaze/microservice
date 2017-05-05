@@ -17,6 +17,7 @@
 package com.muk.app;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.webapp.WebInfConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +95,8 @@ public class StandAloneEntry {
 		@Override
 		public void afterStart(MainSupport main) {
 			LOG.info("Starting jetty...");
-			System.setProperty("org.eclipse.jetty.server.webapp.parentLoaderPriority", "true");
+			final List<Configuration> configurations = new ArrayList<Configuration>();
+
 			final Server jettyServer = new Server();
 			final ServerConnector scc = new ServerConnector(jettyServer);
 			scc.setPort(getHttpPort());
@@ -119,14 +122,11 @@ public class StandAloneEntry {
 			} else {
 				LOG.info("PROD MODDE...running from distribution artifacts.");
 				contextHandler.setParentLoaderPriority(false);
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("setting war: {}",
-							this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
-				}
+				configurations.add(new WebInfConfiguration());
 				contextHandler.setWar(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 			}
 
-			contextHandler.setConfigurations(new Configuration[] { new AnnotationConfiguration() {
+			configurations.add(new AnnotationConfiguration() {
 				@Override
 				public void preConfigure(WebAppContext context) throws Exception {
 					super.preConfigure(context);
@@ -143,7 +143,9 @@ public class StandAloneEntry {
 					context.setAttribute(CLASS_INHERITANCE_MAP, map);
 					_classInheritanceHandler = new ClassInheritanceHandler(map);
 				}
-			} });
+			});
+
+			contextHandler.setConfigurations(configurations.toArray(new Configuration[configurations.size()]));
 
 			contextHandler.setServer(jettyServer);
 			contextHandler.setErrorHandler(new ErrorPageErrorHandler());
