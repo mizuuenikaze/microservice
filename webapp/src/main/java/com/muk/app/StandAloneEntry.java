@@ -120,8 +120,8 @@ public class StandAloneEntry {
 				contextHandler.setResourceBase("src/main/webapp");
 				contextHandler.setParentLoaderPriority(true);
 			} else {
-				LOG.info("PROD MODDE...running from distribution artifacts.");
-				contextHandler.setParentLoaderPriority(false);
+				LOG.info("PROD MODE...running from distribution artifacts.");
+				contextHandler.setParentLoaderPriority(true);
 				configurations.add(new WebInfConfiguration());
 				contextHandler.setWar(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath());
 			}
