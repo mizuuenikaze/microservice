@@ -44,7 +44,6 @@ dependencies {
 	compile 'org.springframework.security:spring-security-web:4.2.2.RELEASE'
 	compile 'org.springframework.security:spring-security-config:4.2.2.RELEASE'
 	compile 'org.apache.felix:org.apache.felix.framework:5.6.2'
-	compile 'org.apache.camel:camel-spring-osgi:2.3.0'
 	compile group: 'org.apache.camel', name: 'camel-spring-javaconfig', version: camelVersion
 	compile group: 'org.apache.camel', name: 'camel-spring-security', version: camelVersion
 	compile group: 'org.apache.camel', name: 'camel-test-spring', version: camelVersion

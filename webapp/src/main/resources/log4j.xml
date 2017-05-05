@@ -71,7 +71,7 @@
 	</logger>
 
 	<root>
-		<level value="TRACE" />
+		<level value="INFO" />
 		<appender-ref ref="console" />
 		<appender-ref ref="file" />
 		<appender-ref ref="errorFile" />

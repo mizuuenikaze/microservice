@@ -32,44 +32,20 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.jms.JmsConfiguration;
 import org.apache.camel.component.restlet.RestletComponent;
-import org.apache.camel.osgi.SpringCamelContextFactory;
-import org.osgi.framework.BundleContext;
 import org.restlet.Component;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
-import org.springframework.osgi.context.BundleContextAware;
 
 @Configuration
 @PropertySources(value = { @PropertySource(value = "classpath:camel.properties", ignoreResourceNotFound = true),
 		@PropertySource(value = "file:${CONF_BASE}/conf/muk/camel.properties", ignoreResourceNotFound = true) })
-public class CamelConfig extends MultiRouteCamelConfiguration implements InitializingBean, BundleContextAware {
+public class CamelConfig extends MultiRouteCamelConfiguration {
 
 	@Inject
 	private Environment environment;
-
-	private BundleContext bundleContext;
-
-	public BundleContext getBundleContext() {
-		return bundleContext;
-	}
-
-	@Override
-	public void setBundleContext(BundleContext bundleContext) {
-		this.bundleContext = bundleContext;
-	}
-
-	@Override
-	protected CamelContext createCamelContext() throws Exception {
-		final SpringCamelContextFactory factory = new SpringCamelContextFactory();
-		factory.setApplicationContext(getApplicationContext());
-		factory.setBundleContext(getBundleContext());
-
-		return factory.createContext();
-	}
 
 	@Override
 	protected void setupCamelContext(CamelContext camelContext) throws Exception {
@@ -84,10 +60,6 @@ public class CamelConfig extends MultiRouteCamelConfiguration implements Initial
 		activemq.setConfiguration(jmsConfiguration());
 		camelContext.addComponent("activemq", activemq);
 
-	}
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
 	}
 
 	@Bean
