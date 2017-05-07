@@ -52,8 +52,8 @@ public class FeatureApiProcessor extends AbstractRestListProcessor<Object, Featu
 			two.setBadges(Collections.singletonList(portalDanger));
 			final Feature three = new Feature();
 			three.setId("3");
-			three.setTitle("Ceckout");
-			three.setContent("A checkout flow with stripe and paypal integration.");
+			three.setTitle("Checkout");
+			three.setContent("TBD: A checkout flow with stripe and paypal integration.");
 			three.setBadges(Collections.singletonList(portalDanger));
 
 			restReply.add(one);
