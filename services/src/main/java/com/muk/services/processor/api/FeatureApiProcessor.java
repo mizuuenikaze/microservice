@@ -36,20 +36,24 @@ public class FeatureApiProcessor extends AbstractRestListProcessor<Object, Featu
 			portalInfo.setGlyphicon("wrench");
 			portalInfo.setHint("under construction");
 			final Badge portalDanger = new Badge();
-			portalDanger.setLabel("dander");
+			portalDanger.setLabel("danger");
 			portalDanger.setGlyphicon("cloud");
 			portalDanger.setHint("vapor-ware");
 
 			final Feature one = new Feature();
 			one.setId("1");
 			one.setTitle("This Portal");
+			one.setContent("An ampersand single page app with pug and stylus");
 			one.setBadges(Arrays.asList(portalSuccess, portalInfo));
 			final Feature two = new Feature();
 			two.setId("2");
 			two.setTitle("Scheduler");
+			two.setContent("TBD: online scheduling.");
 			two.setBadges(Collections.singletonList(portalDanger));
 			final Feature three = new Feature();
-			three.setId("Checkout");
+			three.setId("3");
+			three.setTitle("Ceckout");
+			three.setContent("A checkout flow with stripe and paypal integration.");
 			three.setBadges(Collections.singletonList(portalDanger));
 
 			restReply.add(one);
