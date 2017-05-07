@@ -26,6 +26,8 @@ import org.restlet.data.MediaType;
 import org.restlet.engine.util.StringUtils;
 
 import com.muk.ext.core.json.RestReply;
+import com.muk.ext.core.json.model.Feature;
+import com.muk.ext.core.json.model.oauth.TokenResponse;
 import com.muk.services.exchange.CamelRouteConstants;
 import com.muk.services.exchange.RestConstants;
 import com.muk.services.json.RouteAction;
@@ -91,9 +93,8 @@ public class RestRouter extends SpringRouteBuilder {
 		.to("direct:routeConfiguration");
 
 		// oauth2 token users
-		rest(RestConstants.Rest.adminPath).get("/tokenLogin").outType(RestReply.class)
-		.produces(MediaType.APPLICATION_JSON.getName()).route()
-		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName()))
+		rest(RestConstants.Rest.adminPath).get("/tokenLogin").outType(TokenResponse.class)
+		.produces(MediaType.APPLICATION_JSON.getName()).route().process("tokenLoginProcessor")
 		.bean("statusHandler", "logRestStatus");
 
 		// api
@@ -102,7 +103,7 @@ public class RestRouter extends SpringRouteBuilder {
 		.process("authPrincipalProcessor").policy("restUserPolicy")
 		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName())).to("direct:ping");
 
-		rest(RestConstants.Rest.apiPath).get("/features").outTypeList(RestReply.class)
+		rest(RestConstants.Rest.apiPath).get("/features").outTypeList(Feature.class)
 		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
 		.process("authPrincipalProcessor").policy("restUserPolicy")
 		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName())).to("direct:feature");

@@ -38,7 +38,7 @@ import org.springframework.util.Assert;
  *
  */
 public class BearerTokenAuthenticationProvider implements AuthenticationProvider {
-	private static final Logger logger = LoggerFactory.getLogger(BearerTokenAuthenticationProvider.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BearerTokenAuthenticationProvider.class);
 
 	protected boolean hideUserNotFoundExceptions = true;
 	private final UserDetailsChecker postAuthenticationChecks = new DefaultPostAuthenticationChecks();
@@ -56,7 +56,9 @@ public class BearerTokenAuthenticationProvider implements AuthenticationProvider
 		try {
 			user = retrieveUser(username);
 		} catch (final UsernameNotFoundException notFound) {
-			logger.debug("User '" + username + "' not found");
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("User '" + username + "' not found");
+			}
 
 			if (hideUserNotFoundExceptions) {
 				throw new BadCredentialsException("Bad credentials");
@@ -119,7 +121,9 @@ public class BearerTokenAuthenticationProvider implements AuthenticationProvider
 		@Override
 		public void check(UserDetails user) {
 			if (!user.isCredentialsNonExpired()) {
-				logger.debug("User account credentials have expired");
+				if (LOG.isDebugEnabled()) {
+					LOG.debug("User account credentials have expired");
+				}
 
 				throw new CredentialsExpiredException("User credentials have expired");
 			}
