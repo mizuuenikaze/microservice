@@ -103,7 +103,7 @@ public class StandAloneEntry {
 			jettyServer.setStopAtShutdown(true);
 
 			final WebAppContext contextHandler = new WebAppContext(null, "/proxied", null, null, null,
-					new ErrorPageErrorHandler(), ServletContextHandler.SESSIONS | ServletContextHandler.NO_SECURITY);
+					new ErrorPageErrorHandler(), ServletContextHandler.NO_SESSIONS | ServletContextHandler.NO_SECURITY);
 
 			if (isDevMode()) {
 				LOG.info("DEV MODE...running from source.");
@@ -134,7 +134,6 @@ public class StandAloneEntry {
 					// skipped.
 					final ClassInheritanceMap map = new ClassInheritanceMap();
 					final ConcurrentHashSet<String> set = new ConcurrentHashSet<>();
-					set.add("com.muk.spring.config.SpringSecurityWebApplicationInitializer");
 					set.add("com.muk.spring.config.RestletWebApplicationInitializer");
 					set.add("com.muk.spring.config.SwaggerWebApplicationInitializer");
 					map.put("org.springframework.web.WebApplicationInitializer", set);

@@ -35,7 +35,7 @@ import com.muk.services.configuration.ServiceConfig;
  * Replaces the web.xml configuration.
  *
  */
-@Order(2)
+@Order(1)
 public class RestletWebApplicationInitializer extends AbstractContextLoaderInitializer {
 	private static final Logger LOG = LoggerFactory.getLogger(RestletWebApplicationInitializer.class);
 

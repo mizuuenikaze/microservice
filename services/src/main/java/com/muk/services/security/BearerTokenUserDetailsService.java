@@ -180,7 +180,7 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 
 	protected UserDetails loadAnonymousUser() {
 		final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+		authorities.add(new SimpleGrantedAuthority("ROLE_ANONYMOUS"));
 		return new OauthUser(RestConstants.Rest.anonymousToken, " ", true, true, true, true, authorities, null, null);
 	}
 

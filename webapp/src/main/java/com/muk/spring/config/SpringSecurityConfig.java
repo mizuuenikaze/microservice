@@ -110,7 +110,7 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
 		policy.setId("user");
 		policy.setAlwaysReauthenticate(true);
 		policy.setUseThreadSecurityContext(false);
-		policy.setSpringSecurityAccessPolicy(new SpringSecurityAccessPolicy("ROLE_USER"));
+		policy.setSpringSecurityAccessPolicy(new SpringSecurityAccessPolicy("ROLE_ANONYMOUS,ROLE_USER"));
 		policy.setAccessDecisionManager(accessDecisionManager());
 		policy.setAuthenticationManager(authenticationManagerBean());
 

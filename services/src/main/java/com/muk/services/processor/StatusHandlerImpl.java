@@ -57,9 +57,9 @@ public class StatusHandlerImpl implements StatusHandler {
 		final Integer code = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
 
 		if (code > org.restlet.data.Status.REDIRECTION_MULTIPLE_CHOICES.getCode()) {
-			LOG.error(message != null ? message : "generic success");
+			LOG.error(message != null ? message : "generic failure");
 		} else {
-			LOG.info(message != null ? message : "generic failure");
+			LOG.info(message != null ? message : "generic success");
 		}
 	}
 }
