@@ -29,7 +29,9 @@ import java.util.concurrent.Executors;
 import javax.inject.Inject;
 
 import org.apache.camel.Processor;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.config.RequestConfig.Builder;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
@@ -54,9 +56,12 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.muk.ext.core.ApplicationState;
 import com.muk.ext.core.ApplicationStateImpl;
+import com.muk.ext.core.jackson.PairDeserializer;
+import com.muk.ext.core.jackson.PairSerializer;
 import com.muk.ext.security.KeystoreService;
 import com.muk.ext.security.NonceService;
 import com.muk.ext.security.impl.DefaultKeystoreService;
@@ -66,12 +71,15 @@ import com.muk.services.api.CachingOauthUserDetailsService;
 import com.muk.services.api.ConfigurationService;
 import com.muk.services.api.CryptoService;
 import com.muk.services.api.CsvImportService;
+import com.muk.services.api.PaymentService;
 import com.muk.services.api.ProjectConfigurator;
 import com.muk.services.api.QueueDemultiplexer;
 import com.muk.services.api.SecurityConfigurationService;
 import com.muk.services.api.StatusHandler;
+import com.muk.services.api.UaaLoginService;
 import com.muk.services.api.builder.RestTemplateBuilder;
 import com.muk.services.api.builder.impl.RestTemplateBuilderImpl;
+import com.muk.services.api.impl.PayPalPaymentService;
 import com.muk.services.commerce.CryptoServiceImpl;
 import com.muk.services.csv.CsvDocumentCache;
 import com.muk.services.csv.DefaultCsvDocumentCache;
@@ -81,15 +89,17 @@ import com.muk.services.exchange.ServiceConstants;
 import com.muk.services.processor.BearerTokenAuthPrincipalProcessor;
 import com.muk.services.processor.CsvQueueDemultiplexerImpl;
 import com.muk.services.processor.DataTranslationProcessor;
+import com.muk.services.processor.GlobalRestExceptionProcessor;
 import com.muk.services.processor.NopProcessor;
 import com.muk.services.processor.QueueDemultiplexerImpl;
-import com.muk.services.processor.RefreshTokenProcessor;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
-import com.muk.services.processor.TokenLoginProcessor;
 import com.muk.services.processor.api.FeatureApiProcessor;
+import com.muk.services.processor.api.OauthLoginProcessor;
+import com.muk.services.processor.api.PaymentApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
 import com.muk.services.security.BearerTokenUserDetailsService;
+import com.muk.services.security.DefaultUaaLoginService;
 import com.muk.services.security.EhCacheBasedTokenCache;
 import com.muk.services.strategy.TranslationFactoryStrategy;
 import com.muk.services.strategy.TranslationStrategy;
@@ -124,6 +134,8 @@ public class ServiceConfig {
 		svc.setOauthCheckTokenPath(environment.getProperty(SecurityConfigurationService.OAUTH_CHECKTOKEN_PATH));
 		svc.setOauthTokenPath(environment.getProperty(SecurityConfigurationService.OAUTH_TOKEN_PATH));
 		svc.setOauthUserInfoPath(environment.getProperty(SecurityConfigurationService.OAUTH_USERINFO_PATH));
+		svc.setPayPalClientId(environment.getProperty(SecurityConfigurationService.PAYPAL_CLIENT_ID));
+		svc.setPayPalUri(environment.getProperty(SecurityConfigurationService.PAYPAL_URI));
 		svc.setSalt(
 				environment.getProperty(SecurityConfigurationService.OAUTH_SALT, "12343&DEFAULT**<>\\{88*)SALT?><"));
 		return svc;
@@ -135,6 +147,12 @@ public class ServiceConfig {
 	@Bean(name = { "jsonObjectMapper" })
 	public ObjectMapper jsonObjectMapper() {
 		final ObjectMapper mapper = new ObjectMapper();
+
+		final SimpleModule pairModule = new SimpleModule();
+		pairModule.addSerializer(Pair.class, new PairSerializer());
+		pairModule.addDeserializer(Pair.class, new PairDeserializer());
+
+		mapper.registerModule(pairModule);
 		mapper.registerModule(new JavaTimeModule());
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		return mapper;
@@ -169,8 +187,7 @@ public class ServiceConfig {
 	}
 
 	/**
-	 * Maintains tenant state based on applications being enabled and disabled
-	 * in muk.
+	 * Maintains tenant state based on applications being enabled and disabled in muk.
 	 *
 	 * @return
 	 */
@@ -197,7 +214,7 @@ public class ServiceConfig {
 		return new CsvQueueDemultiplexerImpl();
 	}
 
-	@Bean(name = { "statusHandler" })
+	@Bean
 	public StatusHandler statusHandler() {
 		return new StatusHandlerImpl();
 	}
@@ -208,23 +225,18 @@ public class ServiceConfig {
 	}
 
 	@Bean
-	public Processor refreshTokenProcessor() {
-		return new RefreshTokenProcessor();
-	}
-
-	@Bean
 	public Processor routeActionProcessor() {
 		return new RouteActionProcessor();
 	}
 
 	@Bean
-	public Processor nopProcessor() {
-		return new NopProcessor();
+	Processor globalRestExceptionProcessor() {
+		return new GlobalRestExceptionProcessor();
 	}
 
 	@Bean
-	public Processor tokenLoginProcessor() {
-		return new TokenLoginProcessor();
+	public Processor nopProcessor() {
+		return new NopProcessor();
 	}
 
 	@Bean(name = { "dataTranslationProcessor" })
@@ -240,6 +252,16 @@ public class ServiceConfig {
 	@Bean
 	public Processor featureApiProcessor() {
 		return new FeatureApiProcessor();
+	}
+
+	@Bean
+	public Processor oauthLoginProcessor() {
+		return new OauthLoginProcessor();
+	}
+
+	@Bean
+	public Processor paymentApiProcessor() {
+		return new PaymentApiProcessor();
 	}
 
 	/* Strategies */
@@ -304,11 +326,21 @@ public class ServiceConfig {
 		return keystoreService;
 	}
 
-	@Bean(name = "oauthUserDetailService")
+	@Bean
 	public CachingOauthUserDetailsService oauthUserDetailsService() {
 		final BearerTokenUserDetailsService oauthUserDetails = new BearerTokenUserDetailsService();
 		oauthUserDetails.setUserCache(oauthUserCache());
 		return oauthUserDetails;
+	}
+
+	@Bean
+	public UaaLoginService uaaLoginService() {
+		return new DefaultUaaLoginService();
+	}
+
+	@Bean
+	public PaymentService paypalPaymentService() {
+		return new PayPalPaymentService();
 	}
 
 	/* Rest Client setup */
@@ -324,7 +356,7 @@ public class ServiceConfig {
 
 				final List<MediaType> supportedMediaTypes = new ArrayList<MediaType>();
 				supportedMediaTypes
-				.add(new MediaType("text", "json", AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET));
+						.add(new MediaType("text", "json", AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET));
 
 				for (final MediaType mediaType : jsonConverter.getSupportedMediaTypes()) {
 					supportedMediaTypes.add(mediaType);
@@ -348,7 +380,7 @@ public class ServiceConfig {
 
 				final List<MediaType> supportedMediaTypes = new ArrayList<MediaType>();
 				supportedMediaTypes
-				.add(new MediaType("text", "json", AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET));
+						.add(new MediaType("text", "json", AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET));
 
 				for (final MediaType mediaType : jsonConverter.getSupportedMediaTypes()) {
 					supportedMediaTypes.add(mediaType);
@@ -372,7 +404,7 @@ public class ServiceConfig {
 
 				final List<MediaType> supportedMediaTypes = new ArrayList<MediaType>();
 				supportedMediaTypes
-				.add(new MediaType("text", "json", AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET));
+						.add(new MediaType("text", "json", AbstractJackson2HttpMessageConverter.DEFAULT_CHARSET));
 
 				for (final MediaType mediaType : jsonConverter.getSupportedMediaTypes()) {
 					supportedMediaTypes.add(mediaType);
@@ -433,6 +465,7 @@ public class ServiceConfig {
 		reqConfig.setSocketTimeout(10000);
 		reqConfig.setCircularRedirectsAllowed(false);
 		reqConfig.setRedirectsEnabled(false);
+		reqConfig.setCookieSpec(CookieSpecs.IGNORE_COOKIES);
 
 		final HttpClientBuilder builder = HttpClientBuilder.create().disableRedirectHandling()
 				.setConnectionManager(manager).setDefaultRequestConfig(reqConfig.build());

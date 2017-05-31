@@ -44,7 +44,7 @@ public class BearerTokenAuthenticationProvider implements AuthenticationProvider
 	private final UserDetailsChecker postAuthenticationChecks = new DefaultPostAuthenticationChecks();
 
 	@Inject
-	@Qualifier("oauthUserDetailService")
+	@Qualifier("oauthUserDetailsService")
 	private UserDetailsService userDetailsService;
 
 	@Override
@@ -83,12 +83,7 @@ public class BearerTokenAuthenticationProvider implements AuthenticationProvider
 
 	protected final UserDetails retrieveUser(String secondaryToken) throws AuthenticationException {
 		UserDetails loadedUser;
-
-		try {
-			loadedUser = this.getUserDetailsService().loadUserByUsername(secondaryToken);
-		} catch (final Exception repositoryProblem) {
-			throw new InternalAuthenticationServiceException(repositoryProblem.getMessage(), repositoryProblem);
-		}
+		loadedUser = this.getUserDetailsService().loadUserByUsername(secondaryToken);
 
 		if (loadedUser == null) {
 			throw new InternalAuthenticationServiceException(

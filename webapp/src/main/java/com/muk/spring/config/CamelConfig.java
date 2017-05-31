@@ -39,6 +39,10 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
 
+import com.muk.restlet.CustomRestletBinding;
+import com.muk.services.facades.PaymentFacade;
+import com.muk.services.facades.impl.DefaultPaymentFacade;
+
 @Configuration
 @PropertySources(value = { @PropertySource(value = "classpath:camel.properties", ignoreResourceNotFound = true),
 		@PropertySource(value = "file:${CONF_BASE}/conf/muk/camel.properties", ignoreResourceNotFound = true) })
@@ -79,6 +83,14 @@ public class CamelConfig extends MultiRouteCamelConfiguration {
 		return router;
 	}
 
+	/* facades */
+	@Bean
+	public PaymentFacade paymentFacade() {
+		return new DefaultPaymentFacade();
+	}
+
+	/* framework components */
+
 	@Bean
 	public RouteBuilder restRoute() {
 		final RestRouter router = new RestRouter();
@@ -94,6 +106,11 @@ public class CamelConfig extends MultiRouteCamelConfiguration {
 	@Bean(name = { "RestletComponentService" })
 	public RestletComponent restletComponentService() {
 		return new RestletComponent(restletComponent());
+	}
+
+	@Bean
+	public CustomRestletBinding customRestletBinding() {
+		return new CustomRestletBinding();
 	}
 
 	@Bean(name = "jmsConnectionFactory")

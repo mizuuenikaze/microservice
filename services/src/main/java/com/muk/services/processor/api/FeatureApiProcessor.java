@@ -20,7 +20,7 @@ public class FeatureApiProcessor extends AbstractRestListProcessor<Object, Featu
 
 	@Override
 	protected List<Feature> handleExchange(Object body, Exchange exchange) throws Exception {
-		final String httpMethod = (String) exchange.getIn().getHeader(Exchange.HTTP_METHOD);
+		final String httpMethod = exchange.getIn().getHeader(Exchange.HTTP_METHOD, String.class);
 
 		exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, Integer.valueOf(Status.SUCCESS_OK.getCode()));
 		final List<Feature> restReply = createResponse();

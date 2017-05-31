@@ -16,10 +16,10 @@
  *******************************************************************************/
 package com.muk.services.api;
 
+import java.util.Map;
+
 import org.springframework.security.core.userdetails.UserDetailsService;
 
-import com.muk.ext.core.json.model.oauth.TokenResponse;
-
 public interface CachingOauthUserDetailsService extends UserDetailsService {
-	TokenResponse loadByAuthorizationCode(String authorizationCode, String redirectUri);
+	Map<String, Object> loadByAuthorizationCode(String authorizationCode, String redirectUri);
 }

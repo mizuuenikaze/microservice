@@ -28,6 +28,7 @@ import org.springframework.web.context.AbstractContextLoaderInitializer;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
+import com.muk.security.AuthEventListener;
 import com.muk.services.configuration.CachingConfig;
 import com.muk.services.configuration.ServiceConfig;
 
@@ -56,7 +57,9 @@ public class RestletWebApplicationInitializer extends AbstractContextLoaderIniti
 
 		final AnnotationConfigWebApplicationContext rootAppContext = new AnnotationConfigWebApplicationContext();
 		rootAppContext.register(new Class<?>[] { AppRootConfig.class, CachingConfig.class, ServiceConfig.class,
-			SpringSecurityConfig.class, CamelConfig.class });
+				SpringSecurityConfig.class, CamelConfig.class });
+
+		rootAppContext.addApplicationListener(new AuthEventListener());
 		return rootAppContext;
 
 	}

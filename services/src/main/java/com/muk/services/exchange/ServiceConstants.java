@@ -47,5 +47,16 @@ public interface ServiceConstants {
 
 	interface CacheNames {
 		public static final String userCache = "ehOauthUserCache";
+		public static final String paymentApiTokenCache = "ehPaymentApiTokenCache";
+	}
+
+	interface PaymentState {
+		public static final String start = "stepTwo";
+		public static final String commit = "stepThree";
+	}
+
+	interface PaymentMethods {
+		public static final String paypalExpress = "paypal-express";
+		public static final String stripe = "stripe";
 	}
 }

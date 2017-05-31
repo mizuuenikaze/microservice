@@ -24,7 +24,7 @@ public interface RestConstants {
 	}
 
 	interface Headers {
-		public static final String outOfBandMessage = "MUK_OOB_MESSAGE";
-		public static final String refreshToken = "MUK_REFRESH_TOKEN";
+		public static final String outOfBandMessage = "X-MUK-OOB-MESSAGE";
+		public static final String refreshToken = "X-MUK-REFRESH-TOKEN";
 	}
 }

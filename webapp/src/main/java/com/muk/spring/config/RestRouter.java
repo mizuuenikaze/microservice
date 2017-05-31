@@ -16,108 +16,100 @@
  *******************************************************************************/
 package com.muk.spring.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.apache.camel.CamelAuthorizationException;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.apache.camel.model.rest.RestPropertyDefinition;
+import org.apache.camel.spi.RestConfiguration;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
-import org.restlet.engine.util.StringUtils;
 
 import com.muk.ext.core.json.RestReply;
 import com.muk.ext.core.json.model.Feature;
-import com.muk.ext.core.json.model.oauth.TokenResponse;
+import com.muk.ext.core.json.model.OauthLoginRequest;
+import com.muk.ext.core.json.model.OauthLoginResponse;
+import com.muk.ext.core.json.model.PatchRequest;
+import com.muk.ext.core.json.model.PaymentRequest;
+import com.muk.ext.core.json.model.PaymentResponse;
 import com.muk.services.exchange.CamelRouteConstants;
 import com.muk.services.exchange.RestConstants;
 import com.muk.services.json.RouteAction;
-import com.muk.services.processor.RefreshTokenProcessor;
+import com.muk.services.processor.GlobalRestExceptionProcessor;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.api.FeatureApiProcessor;
+import com.muk.services.processor.api.OauthLoginProcessor;
+import com.muk.services.processor.api.PaymentApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
 
 /**
  *
  * Rest configuration of camel routes.
  *
- * Security --- The backing authentication and authorization server is uaa for
- * oauth2 so we define an login endpoint and all other protected endpoints
- * follow the same pipeline of providing a principal subject, using spring
- * security, and handling token refreshes before doing any business logic.
+ * Security --- The backing authentication and authorization server is uaa for oauth2 so we define a login endpoint and
+ * all other protected endpoints follow the same pipeline of providing a principal subject, using spring security, and
+ * handling token refreshes before doing any business logic.
  *
  */
 public class RestRouter extends SpringRouteBuilder {
 
 	@Override
 	public void configure() throws Exception {
-		final List<RestPropertyDefinition> corsHeaders = new ArrayList<RestPropertyDefinition>();
-		RestPropertyDefinition corsHeader = new RestPropertyDefinition();
-		corsHeader.setKey("Access-Control-Allow-Origin");
-		corsHeader.setValue("*");
-		corsHeaders.add(corsHeader);
+		onException(CamelAuthorizationException.class).handled(true)
+				.process(lookup(GlobalRestExceptionProcessor.class));
 
-		corsHeader = new RestPropertyDefinition();
-		corsHeader.setKey("Access-Control-Allow-Methods");
-		corsHeader.setValue("GET, HEAD, POST, PUT, DELETE, TRACE, OPTIONS, CONNECT, PATCH");
-		corsHeaders.add(corsHeader);
+		final String jsonMediaType = MediaType.APPLICATION_JSON.getName();
 
-		corsHeader = new RestPropertyDefinition();
-		corsHeader.setKey("Access-Control-Allow-Headers");
-		corsHeader.setValue(
-				"Origin, Accept, Authorization, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers");
-		corsHeaders.add(corsHeader);
-
-		corsHeader = new RestPropertyDefinition();
-		corsHeader.setKey("Access-Control-Max-Age");
-		corsHeader.setValue("3600");
-		corsHeaders.add(corsHeader);
-
+		// Rest config with cors support only for development
 		restConfiguration().component("restlet").bindingMode(RestBindingMode.json).skipBindingOnErrorCode(false)
-		.dataFormatProperty("json.in.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
-		.dataFormatProperty("json.out.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
-		.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(false)
-		.setCorsHeaders(corsHeaders);
+				.dataFormatProperty("json.in.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
+				.dataFormatProperty("json.out.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
+				.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(true)
+				.corsAllowCredentials(true).corsHeaderProperty("Access-Control-Allow-Origin", "http://localhost:3000")
+				.corsHeaderProperty("Access-Control-Allow-Headers",
+						RestConfiguration.CORS_ACCESS_CONTROL_ALLOW_HEADERS + ", Authorization")
+				.endpointProperty("restletBinding", "#customRestletBinding");
 
 		// notification endpoint
-		rest(RestConstants.Rest.apiPath).post("/intents").bindingMode(RestBindingMode.off)
-		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
-		.routeId(CamelRouteConstants.RouteIds.asyncNotificationPush).process("authPrincipalProcessor")
-		.policy("restUserPolicy").process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName()))
-		.to("direct:intent");
+		rest(RestConstants.Rest.apiPath).post("/intents").bindingMode(RestBindingMode.off).consumes(jsonMediaType)
+				.produces(jsonMediaType).route().routeId(CamelRouteConstants.RouteIds.asyncNotificationPush)
+				.process("authPrincipalProcessor").policy("restUserPolicy").to("direct:intent");
 
 		// camel route intents
 		rest(RestConstants.Rest.adminPath).post("/routes/changeRouteState").type(RouteAction.class)
-		.outType(RestReply.class).consumes(MediaType.APPLICATION_JSON.getName())
-		.produces(MediaType.APPLICATION_JSON.getName()).route().process("authPrincipalProcessor")
-		.policy("restUserPolicy").process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName()))
-		.to("direct:routeConfiguration");
+				.outType(RestReply.class).consumes(jsonMediaType).produces(jsonMediaType).route()
+				.process("authPrincipalProcessor").policy("restUserPolicy").to("direct:routeConfiguration");
 
 		// oauth2 token users
-		rest(RestConstants.Rest.adminPath).get("/tokenLogin").outType(TokenResponse.class)
-		.produces(MediaType.APPLICATION_JSON.getName()).route().process("tokenLoginProcessor")
-		.bean("statusHandler", "logRestStatus");
+		rest(RestConstants.Rest.adminPath + "/login").post().type(OauthLoginRequest.class)
+				.outType(OauthLoginResponse.class).consumes(jsonMediaType).produces(jsonMediaType).to("direct:login")
+				.get().outType(OauthLoginResponse.class).produces(jsonMediaType).to("direct:login");
 
-		// api
-		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class)
-		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
-		.process("authPrincipalProcessor").policy("restUserPolicy")
-		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName())).to("direct:ping");
+		// api endpoints
+		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class).consumes(jsonMediaType)
+				.produces(jsonMediaType).to("direct:ping");
 
-		rest(RestConstants.Rest.apiPath).get("/features").outTypeList(Feature.class)
-		.consumes(MediaType.APPLICATION_JSON.getName()).produces(MediaType.APPLICATION_JSON.getName()).route()
-		.process("authPrincipalProcessor").policy("restUserPolicy")
-		.process(StringUtils.firstLower(RefreshTokenProcessor.class.getSimpleName())).to("direct:feature");
+		rest(RestConstants.Rest.apiPath).get("/features").outType(Feature[].class).consumes(jsonMediaType)
+				.produces(jsonMediaType).to("direct:feature");
+
+		rest(RestConstants.Rest.apiPath + "/payments").post().type(PaymentRequest.class).outType(PaymentResponse.class)
+				.consumes(jsonMediaType).produces(jsonMediaType).to("direct:payment").patch("/{paymentId}")
+				.type(PatchRequest.class).outType(PaymentResponse.class).to("direct:payments");
 
 		// direct rest routes
 
 		// camel route management
-		from("direct:routeConfiguration").process(StringUtils.firstLower(RouteActionProcessor.class.getSimpleName()))
-		.bean("statusHandler", "logRestStatus");
+		from("direct:routeConfiguration").process(lookup(RouteActionProcessor.class)).bean("statusHandler",
+				"logRestStatus");
 
-		// api routes
-		from("direct:ping").process(StringUtils.firstLower(PingApiProcessor.class.getSimpleName()))
-		.bean("statusHandler", "logRestStatus");
-		from("direct:feature").process(StringUtils.firstLower(FeatureApiProcessor.class.getSimpleName()))
-		.bean("statusHandler", "logRestStatus");
+		/* api routes */
+
+		// public routes
+		from("direct:login").process(lookup(OauthLoginProcessor.class)).bean("statusHandler", "logRestStatus");
+
+		// protected routes
+		from("direct:ping").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(PingApiProcessor.class)).bean("statusHandler", "logRestStatus");
+		from("direct:feature").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(FeatureApiProcessor.class)).bean("statusHandler", "logRestStatus");
+		from("direct:payment").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(PaymentApiProcessor.class)).bean("statusHandler", "logRestStatus");
 	}
 }

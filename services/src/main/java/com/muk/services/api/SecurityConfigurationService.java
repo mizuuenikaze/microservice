@@ -23,6 +23,8 @@ public interface SecurityConfigurationService {
 	static final String OAUTH_TOKEN_PATH = "oauth.tokenPath";
 	static final String OAUTH_USERINFO_PATH = "oauth.userInfoPath";
 	static final String OAUTH_CHECKTOKEN_PATH = "oauth.checkTokenPath";
+	static final String PAYPAL_CLIENT_ID = "paypal.clientId";
+	static final String PAYPAL_URI = "paypal.uri";
 	static final String OAUTH_SALT = "oauth.salt";
 
 	String getOauthServer();
@@ -34,6 +36,10 @@ public interface SecurityConfigurationService {
 	String getOauthUserInfoPath();
 
 	String getOauthCheckTokenPath();
+
+	String getPayPalClientId();
+
+	String getPayPalUri();
 
 	String getSalt();
 }

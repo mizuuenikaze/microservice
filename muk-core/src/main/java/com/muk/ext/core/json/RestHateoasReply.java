@@ -20,9 +20,10 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.muk.ext.core.api.HateosResponse;
 
 @JsonInclude(Include.NON_NULL)
-public class RestHateoasReply extends RestReply {
+public class RestHateoasReply extends RestReply implements HateosResponse {
 	private List<HateoasLink> links;
 
 	public List<HateoasLink> getLinks() {

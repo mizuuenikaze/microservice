@@ -4,15 +4,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.muk.ext.core.json.HateoasLink;
+import com.muk.ext.core.json.RestHateoasReply;
 
 @JsonInclude(Include.NON_NULL)
-public class Feature {
+public class Feature  extends RestHateoasReply{
 	private String id;
 	private String title;
 	private String content;
 	private List<Badge> badges;
-	private List<HateoasLink> _links;
 
 	public String getId() {
 		return id;
@@ -44,14 +43,6 @@ public class Feature {
 
 	public void setBadges(List<Badge> badges) {
 		this.badges = badges;
-	}
-
-	public List<HateoasLink> get_links() {
-		return _links;
-	}
-
-	public void set_links(List<HateoasLink> _links) {
-		this._links = _links;
 	}
 
 }

@@ -16,9 +16,13 @@
  *******************************************************************************/
 package com.muk.services.api;
 
-import java.util.List;
+import java.util.Map;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public interface PaymentService {
-	List<String> getActions(String orderId, String paymentId) throws Exception;
+	Map<String, Object> startPayment(JsonNode payload);
+
+	Map<String, Object> commitPayment(String paymentId, String payerId);
 
 }

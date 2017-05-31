@@ -36,7 +36,7 @@ public class BearerTokenAuthPrincipalProcessor implements Processor {
 
 		String bearerToken = RestConstants.Rest.anonymousToken;
 
-		if (exchange.getIn().getHeader(HttpHeaders.AUTHORIZATION) != null) {
+		if (exchange.getIn().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
 			bearerToken = StringUtils
 					.substringAfter(exchange.getIn().getHeader(HttpHeaders.AUTHORIZATION, String.class), "Bearer ");
 		}

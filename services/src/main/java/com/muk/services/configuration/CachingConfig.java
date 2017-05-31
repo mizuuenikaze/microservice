@@ -16,12 +16,16 @@
  *******************************************************************************/
 package com.muk.services.configuration;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.cache.Caching;
 import javax.cache.spi.CachingProvider;
 
 import org.ehcache.config.CacheConfiguration;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.ehcache.expiry.Duration;
+import org.ehcache.expiry.Expirations;
 import org.ehcache.jsr107.Eh107Configuration;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
@@ -45,6 +49,12 @@ public class CachingConfig extends CachingConfigurerSupport {
 				.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(10)).build();
 		cacheManager.createCache(ServiceConstants.CacheNames.userCache,
 				Eh107Configuration.fromEhcacheCacheConfiguration(cacheConfiguration));
+
+		final CacheConfiguration<Object, Object> tokenCacheConfiguration = CacheConfigurationBuilder
+				.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(2))
+				.withExpiry(Expirations.timeToLiveExpiration(Duration.of(5, TimeUnit.MINUTES))).build();
+		cacheManager.createCache(ServiceConstants.CacheNames.paymentApiTokenCache,
+				Eh107Configuration.fromEhcacheCacheConfiguration(tokenCacheConfiguration));
 
 		return cacheManager;
 	}

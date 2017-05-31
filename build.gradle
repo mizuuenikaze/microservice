@@ -31,7 +31,7 @@ allprojects {
 		config = parsedConfig
 		springVersion='4.3.7.RELEASE'
 		restletVersion='2.3.9'
-		camelVersion='2.18.3'
+		camelVersion='2.19.0'
 		jacksonVersion='2.9.0.pr2'
 		applicationDefaultJvmArgs = ['-Dcustom.logging.root=' + parsedConfig.logging, '-Dcustom.application.keystore=' + parsedConfig.keystorefile, '-Dcustom.application.keystorepass=' + parsedConfig.keystorepass]
 		buildTimestamp = new Date().format('yyyy-MM-dd HH:mm:ss')

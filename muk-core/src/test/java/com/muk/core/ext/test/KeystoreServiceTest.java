@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.muk.ext.security.impl.DefaultKeystoreService;
@@ -51,7 +52,8 @@ public class KeystoreServiceTest {
 	 * This test is used to setup a default keystore and can be used locally, but to do not
 	 * check in this enabled test.
 	 */
-	//@Test
+	@Test
+	@Ignore
 	public void addSharedSecretToKeystoreTest() throws Exception {
 
 		for (final Map.Entry<String, String> entry : allApplications.entrySet()) {
@@ -61,7 +63,8 @@ public class KeystoreServiceTest {
 		listKeystoreTest();
 	}
 
-	//@Test
+	@Test
+	@Ignore
 	public void listKeystoreTest() throws Exception {
 		for (final Map.Entry<String, String> entry : allApplications.entrySet()) {
 			final String sensitiveValue = keystoreService.getPBEKey(entry.getKey());

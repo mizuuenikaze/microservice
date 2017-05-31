@@ -19,9 +19,9 @@ package com.muk.services.configuration;
 import com.muk.services.api.ProjectConfigurator;
 
 /**
- * 
+ *
  * Aggregate of all properties file configurations.
- * 
+ *
  */
 public class ConfigurationServiceImpl implements ProjectConfigurator {
 
@@ -33,6 +33,8 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 	private String oauthTokenPath;
 	private String oauthUserInfoPath;
 	private String oauthCheckTokenPath;
+	private String payPalClientId;
+	private String payPalUri;
 	private String salt;
 
 	@Override
@@ -115,5 +117,23 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 	public void setSftpTarget(String sftpTarget) {
 		this.sftpTarget = sftpTarget;
 	}
-	
+
+	@Override
+	public String getPayPalClientId() {
+		return payPalClientId;
+	}
+
+	public void setPayPalClientId(String payPalClientId) {
+		this.payPalClientId = payPalClientId;
+	}
+
+	@Override
+	public String getPayPalUri() {
+		return payPalUri;
+	}
+
+	public void setPayPalUri(String payPalUri) {
+		this.payPalUri = payPalUri;
+	}
+
 }

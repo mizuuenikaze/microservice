@@ -40,6 +40,10 @@ environments {
 						checkTokenPath = '/check_token'
 						//salt = 'don't set unless you know what you are doing'
 					}
+					paypal {
+						uri = 'https://api.sandbox.paypal.com/v1'
+						clientId ='ATIGpVdflSW-kHeroHS6HzNFe-jWMIBetviFFynwU1o1XBN_h_9HAP48tStmZuC65GETL7ql4Pe74_fT'
+					}
 				}
 				camel {
 					camel {
@@ -88,6 +92,10 @@ environments {
 						userInfoPath = '/userinfo'
 						checkTokenPath = '/check_token'
 						//salt = 'don't set unless you know what you are doing'
+					}
+					paypal {
+						uri = 'https://api.paypal.com/v1'
+						clientId ='?'
 					}
 				}
 				camel {

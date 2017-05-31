@@ -17,7 +17,6 @@
 package com.muk.services.security;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
@@ -25,7 +24,9 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -52,12 +53,17 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.muk.ext.core.json.model.oauth.TokenResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.muk.ext.security.KeystoreService;
 import com.muk.ext.security.NonceService;
 import com.muk.services.api.CachingOauthUserDetailsService;
 import com.muk.services.api.SecurityConfigurationService;
 import com.muk.services.exchange.RestConstants;
+
+import net.thisptr.jackson.jq.JsonQuery;
+import net.thisptr.jackson.jq.exception.JsonQueryException;
 
 public class BearerTokenUserDetailsService implements CachingOauthUserDetailsService {
 	private static final Logger LOG = LoggerFactory.getLogger(BearerTokenUserDetailsService.class);
@@ -85,7 +91,11 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		UserDetails user = userCache.getUserFromCache(username);
 
 		if (user == null) {
-			user = loadAnonymousUser();
+			if (RestConstants.Rest.anonymousToken.equals(username)) {
+				user = loadAnonymousUser();
+			} else {
+				throw new UsernameNotFoundException("reauthenticate");
+			}
 		} else if (!(user instanceof OauthUser)) {
 			throw new UsernameNotFoundException("Unexpected user detail type.");
 		} else if (!isValidToken(user.getPassword())) {
@@ -100,7 +110,9 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 	}
 
 	@Override
-	public TokenResponse loadByAuthorizationCode(String authorizationCode, String redirectUri) {
+	public Map<String, Object> loadByAuthorizationCode(String authorizationCode, String redirectUri) {
+		final Map<String, Object> responsePayload = new HashMap<String, Object>();
+
 		// request bearer token
 		final URI authUrl = UriComponentsBuilder.fromUriString(securityCfgService.getOauthServer())
 				.path(securityCfgService.getOauthTokenPath()).build().toUri();
@@ -108,7 +120,7 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		final URI userInfoUrl = UriComponentsBuilder.fromUriString(securityCfgService.getOauthServer())
 				.path(securityCfgService.getOauthUserInfoPath()).build().toUri();
 
-		ResponseEntity<TokenResponse> response = null;
+		ResponseEntity<JsonNode> response = null;
 
 		final MultiValueMap<String, String> postBody = new LinkedMultiValueMap<String, String>();
 		postBody.put("response_type", Collections.singletonList("token"));
@@ -120,15 +132,15 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			response = restTemplate.exchange(authUrl, HttpMethod.POST, buildAuthRequest("Basic",
 					securityCfgService.getOauthServiceClientId() + ":"
 							+ keystoreService.getPBEKey(securityCfgService.getOauthServiceClientId()),
-							postBody), TokenResponse.class);
+					postBody), JsonNode.class);
 		} catch (final IOException ioEx) {
 			LOG.error("Failed to get oauth client secret.", ioEx);
-			response = new ResponseEntity<TokenResponse>(new TokenResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<JsonNode>((JsonNode) null, HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (final GeneralSecurityException secEx) {
 			LOG.error("Failed to read client secret from keystore.", secEx);
-			response = new ResponseEntity<TokenResponse>(new TokenResponse(), HttpStatus.INTERNAL_SERVER_ERROR);
+			response = new ResponseEntity<JsonNode>((JsonNode) null, HttpStatus.INTERNAL_SERVER_ERROR);
 		} catch (final HttpClientErrorException httpEx) {
-			response = new ResponseEntity<TokenResponse>(new TokenResponse(), httpEx.getStatusCode());
+			response = new ResponseEntity<JsonNode>((JsonNode) null, httpEx.getStatusCode());
 
 			if (httpEx instanceof HttpStatusCodeException) {
 				if (LOG.isDebugEnabled()) {
@@ -139,17 +151,27 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		}
 
 		if (!HttpStatus.OK.equals(response.getStatusCode())) {
-			response.getBody()
-			.setMessage("Failed to request access token. " + response.getStatusCode().getReasonPhrase());
+			responsePayload.put("error",
+					"Failed to request access token. " + response.getStatusCode().getReasonPhrase());
 		} else {
+			JsonQuery jq = null;
+			String accessToken = null;
+
+			try {
+				jq = JsonQuery.compile(".access_token");
+				accessToken = jq.apply(response.getBody()).get(0).textValue();
+			} catch (final JsonQueryException ex) {
+				responsePayload.put("error", "Failed jq " + ex.getMessage());
+			}
+
 			// Request user info
-			ResponseEntity<String> infoResponse = null;
+			ResponseEntity<JsonNode> infoResponse = null;
 
 			try {
 				infoResponse = restTemplate.exchange(userInfoUrl, HttpMethod.GET,
-						buildAuthRequest("Bearer", response.getBody().getAccess_token(), null), String.class);
+						buildAuthRequest("Bearer", accessToken, null), JsonNode.class);
 			} catch (final HttpClientErrorException httpEx) {
-				response = new ResponseEntity<TokenResponse>(new TokenResponse(), httpEx.getStatusCode());
+				response = new ResponseEntity<JsonNode>((JsonNode) null, httpEx.getStatusCode());
 
 				if (httpEx instanceof HttpStatusCodeException) {
 					if (LOG.isDebugEnabled()) {
@@ -158,16 +180,55 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 					}
 				}
 			}
+
 			if (!HttpStatus.OK.equals(infoResponse.getStatusCode())) {
-				response.getBody()
-				.setMessage("Failed to request user info. " + response.getStatusCode().getReasonPhrase());
+				responsePayload.put("error",
+						"Failed to request user info. " + response.getStatusCode().getReasonPhrase());
 			} else {
-				// save in cache
-				userCache.putUserInCache(buildUser(response.getBody(), infoResponse.getBody(), redirectUri));
+				// Munge a secondary bearer token
+				String secondaryToken = null;
+
+				try {
+					secondaryToken = nonceService.generateHash(securityCfgService.getSalt(), accessToken);
+				} catch (final InvalidKeyException invalidKeyEx) {
+					responsePayload.put("error", "Failed creating secondary token. " + invalidKeyEx.getMessage());
+				} catch (final NoSuchAlgorithmException noSuchAlgorithmEx) {
+					responsePayload.put("error", "Failed creating secondary token. " + noSuchAlgorithmEx.getMessage());
+				}
+
+				if (responsePayload.get("error") == null) {
+					try {
+						jq = JsonQuery.compile(".refresh_token");
+						final String refreshToken = jq.apply(response.getBody()).get(0).textValue();
+						jq = JsonQuery.compile(".user_name");
+						final String userName = jq.apply(infoResponse.getBody()).get(0).textValue();
+						// save in cache
+						userCache.putUserInCache(
+								buildUser(accessToken, secondaryToken, refreshToken, userName, redirectUri));
+
+						String firstName = null;
+						String lastName = null;
+
+						jq = JsonQuery.compile(".given_name,.family_name");
+						final List<JsonNode> jqNodes = jq.apply(infoResponse.getBody());
+						firstName = jqNodes.get(0).textValue();
+						lastName = jqNodes.get(1).textValue();
+
+						final ObjectNode userResponse = JsonNodeFactory.instance.objectNode();
+						userResponse.put("token", secondaryToken);
+						userResponse.put("firstName", firstName);
+						userResponse.put("lastName", lastName);
+						userResponse.put("userName", userName);
+						responsePayload.put("json", userResponse);
+
+					} catch (final JsonQueryException ex) {
+						responsePayload.put("error", "Failed jq. " + ex.getMessage());
+					}
+				}
 			}
 		}
 
-		return response.getBody();
+		return responsePayload;
 	}
 
 	public UserCache getUserCache() {
@@ -200,7 +261,7 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			response = restTemplate.exchange(checkTokenUrl, HttpMethod.POST, buildAuthRequest("Basic",
 					securityCfgService.getOauthServiceClientId() + ":"
 							+ keystoreService.getPBEKey(securityCfgService.getOauthServiceClientId()),
-							postBody), String.class);
+					postBody), String.class);
 
 		} catch (final IOException ioEx) {
 			LOG.error("Failed to get oauth client secret.", ioEx);
@@ -219,6 +280,9 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			}
 		}
 
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("check_token response: {}", response.getBody());
+		}
 		return HttpStatus.OK.equals(response == null ? "" : response.getStatusCode());
 	}
 
@@ -226,34 +290,13 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 		loadByAuthorizationCode(((OauthUser) user).getRefreshToken(), ((OauthUser) user).getRedirectUri());
 	}
 
-	protected UserDetails buildUser(TokenResponse tokenResponse, String userInfo, String redirectUri) {
+	protected UserDetails buildUser(String accessToken, String secondaryToken, String refreshToken, String userName,
+			String redirectUri) {
 		final List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
 		authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
 
-		OauthUser userDetails = new OauthUser(userInfo, tokenResponse.getAccess_token(), authorities,
-				tokenResponse.getRefresh_token(), redirectUri);
-
-		// Munge a secondary bearer token
-
-		try {
-			tokenResponse.setAccess_token(
-					nonceService.generateHash(securityCfgService.getSalt(), tokenResponse.getAccess_token()));
-
-		} catch (final InvalidKeyException invalidKeyEx) {
-			tokenResponse.setMessage("Failed creating secondary token. " + invalidKeyEx.getMessage());
-			tokenResponse.setAccess_token(null);
-			userDetails = null;
-		} catch (final NoSuchAlgorithmException noSuchAlgorithmEx) {
-			tokenResponse.setMessage("Failed creating secondary token. " + noSuchAlgorithmEx.getMessage());
-			tokenResponse.setAccess_token(null);
-			userDetails = null;
-		} finally {
-			tokenResponse.setRefresh_token(null);
-
-			if (userDetails != null) {
-				userDetails.setSecondaryToken(tokenResponse.getAccess_token());
-			}
-		}
+		final OauthUser userDetails = new OauthUser(userName, accessToken, authorities, refreshToken, redirectUri);
+		userDetails.setSecondaryToken(secondaryToken);
 
 		return userDetails;
 	}
@@ -262,20 +305,16 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			MultiValueMap<String, String> postBody) {
 		HttpEntity<MultiValueMap<String, String>> request = null;
 
-		try {
-			final MultiValueMap<String, String> customHeaders = new LinkedMultiValueMap<String, String>();
-			customHeaders.add("Authorization", authType + " " + (authType.equals("Basic")
-					? nonceService.encode(value.getBytes(StandardCharsets.UTF_8.name())) : value));
+		final MultiValueMap<String, String> customHeaders = new LinkedMultiValueMap<String, String>();
+		customHeaders.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_UTF8_VALUE);
+		customHeaders.add(HttpHeaders.AUTHORIZATION, authType + " "
+				+ (authType.equals("Basic") ? nonceService.encode(value.getBytes(StandardCharsets.UTF_8)) : value));
 
-			if (postBody != null) {
-				customHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-			}
-
-			request = new HttpEntity<MultiValueMap<String, String>>(postBody, customHeaders);
-
-		} catch (final UnsupportedEncodingException e) {
-			LOG.error("Failed to buid auth request.", e);
+		if (postBody != null) {
+			customHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 		}
+
+		request = new HttpEntity<MultiValueMap<String, String>>(postBody, customHeaders);
 
 		return request;
 	}

@@ -54,12 +54,18 @@ public class StatusHandlerImpl implements StatusHandler {
 	@Override
 	public void logRestStatus(Exchange exchange) {
 		final String message = exchange.getIn().getHeader(RestConstants.Headers.outOfBandMessage, String.class);
-		final Integer code = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+		Integer code = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
 
-		if (code > org.restlet.data.Status.REDIRECTION_MULTIPLE_CHOICES.getCode()) {
-			LOG.error(message != null ? message : "generic failure");
-		} else {
-			LOG.info(message != null ? message : "generic success");
+		if (code == null) {
+			code = exchange.getOut().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+		}
+
+		if (code != null) {
+			if (code > org.restlet.data.Status.REDIRECTION_MULTIPLE_CHOICES.getCode()) {
+				LOG.error(message != null ? message : "generic failure");
+			} else {
+				LOG.info(message != null ? message : "generic success");
+			}
 		}
 	}
 }
