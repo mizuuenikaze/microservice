@@ -35,6 +35,7 @@ import com.muk.services.json.RouteAction;
 import com.muk.services.processor.GlobalRestExceptionProcessor;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.api.FeatureApiProcessor;
+import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
 import com.muk.services.processor.api.PaymentApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
@@ -59,8 +60,10 @@ public class RestRouter extends SpringRouteBuilder {
 
 		// Rest config with cors support only for development
 		restConfiguration().component("restlet").bindingMode(RestBindingMode.json).skipBindingOnErrorCode(false)
-				.dataFormatProperty("json.in.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
-				.dataFormatProperty("json.out.moduleClassNames", "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule")
+				.dataFormatProperty("json.in.moduleClassNames",
+						"com.fasterxml.jackson.datatype.jsr310.JavaTimeModule, com.muk.ext.core.jackson.PairModule")
+				.dataFormatProperty("json.out.moduleClassNames",
+						"com.fasterxml.jackson.datatype.jsr310.JavaTimeModule, com.muk.ext.core.jackson.PairModule")
 				.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(true)
 				.corsAllowCredentials(true).corsHeaderProperty("Access-Control-Allow-Origin", "http://localhost:3000")
 				.corsHeaderProperty("Access-Control-Allow-Headers",
@@ -90,8 +93,8 @@ public class RestRouter extends SpringRouteBuilder {
 				.produces(jsonMediaType).to("direct:feature");
 
 		rest(RestConstants.Rest.apiPath + "/payments").post().type(PaymentRequest.class).outType(PaymentResponse.class)
-				.consumes(jsonMediaType).produces(jsonMediaType).to("direct:payment").patch("/{paymentId}")
-				.type(PatchRequest.class).outType(PaymentResponse.class).to("direct:payments");
+				.consumes(jsonMediaType).produces(jsonMediaType).to("direct:payment").patch("/{rId}")
+				.type(PatchRequest.class).outType(PaymentResponse.class).to("direct:paymentIntent");
 
 		// direct rest routes
 
@@ -111,5 +114,7 @@ public class RestRouter extends SpringRouteBuilder {
 				.process(lookup(FeatureApiProcessor.class)).bean("statusHandler", "logRestStatus");
 		from("direct:payment").process("authPrincipalProcessor").policy("restUserPolicy")
 				.process(lookup(PaymentApiProcessor.class)).bean("statusHandler", "logRestStatus");
+		from("direct:paymentIntent").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(IntentApiProcessor.class)).bean("statusHandler", "logRestStatus");
 	}
 }

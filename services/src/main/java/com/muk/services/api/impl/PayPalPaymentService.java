@@ -80,17 +80,14 @@ public class PayPalPaymentService implements PaymentService {
 	public Map<String, Object> commitPayment(String paymentId, String payerId) {
 		final Map<String, Object> response = new HashMap<String, Object>();
 		final ObjectNode payload = JsonNodeFactory.instance.objectNode();
-		payload.put("payerId", payerId);
+		payload.put("payer_id", payerId);
 
-		final ResponseEntity<JsonNode> paymentResponse = send("/payments/" + paymentId + "/execute", payload);
+		final ResponseEntity<JsonNode> paymentResponse = send("/payments/payment/" + paymentId + "/execute", payload);
 
-		try {
-			final JsonQuery jq = JsonQuery.compile("{paymentId: .id, state: .state}");
-			final List<JsonNode> nodes = jq.apply(paymentResponse.getBody());
-			response.put("json", nodes.get(0));
-		} catch (final JsonQueryException jsonEx) {
-			LOG.error("failed jq", jsonEx);
-			response.put("error", jsonEx.getMessage());
+		if (!"approved".equals(paymentResponse.getBody().get("state").asText())) {
+			response.put("error", "Unexpected status: " + paymentResponse.getBody().get("state").asText());
+		} else {
+			response.put("success", true);
 		}
 
 		return response;
@@ -142,7 +139,7 @@ public class PayPalPaymentService implements PaymentService {
 	private ResponseEntity<JsonNode> send(String path, JsonNode payload) {
 		final HttpHeaders headers = new HttpHeaders();
 
-		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON_UTF8));
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		headers.add(HttpHeaders.AUTHORIZATION, getTokenHeader());
 

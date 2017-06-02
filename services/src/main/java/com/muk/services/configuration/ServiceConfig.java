@@ -29,7 +29,6 @@ import java.util.concurrent.Executors;
 import javax.inject.Inject;
 
 import org.apache.camel.Processor;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -56,12 +55,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.muk.ext.core.ApplicationState;
 import com.muk.ext.core.ApplicationStateImpl;
-import com.muk.ext.core.jackson.PairDeserializer;
-import com.muk.ext.core.jackson.PairSerializer;
+import com.muk.ext.core.jackson.PairModule;
 import com.muk.ext.security.KeystoreService;
 import com.muk.ext.security.NonceService;
 import com.muk.ext.security.impl.DefaultKeystoreService;
@@ -95,6 +92,7 @@ import com.muk.services.processor.QueueDemultiplexerImpl;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
 import com.muk.services.processor.api.FeatureApiProcessor;
+import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
 import com.muk.services.processor.api.PaymentApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
@@ -148,11 +146,7 @@ public class ServiceConfig {
 	public ObjectMapper jsonObjectMapper() {
 		final ObjectMapper mapper = new ObjectMapper();
 
-		final SimpleModule pairModule = new SimpleModule();
-		pairModule.addSerializer(Pair.class, new PairSerializer());
-		pairModule.addDeserializer(Pair.class, new PairDeserializer());
-
-		mapper.registerModule(pairModule);
+		mapper.registerModule(new PairModule());
 		mapper.registerModule(new JavaTimeModule());
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		return mapper;
@@ -257,6 +251,11 @@ public class ServiceConfig {
 	@Bean
 	public Processor oauthLoginProcessor() {
 		return new OauthLoginProcessor();
+	}
+
+	@Bean
+	public Processor intentApiProcessor() {
+		return new IntentApiProcessor();
 	}
 
 	@Bean

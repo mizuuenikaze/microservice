@@ -37,7 +37,6 @@ public abstract class AbstractProcessor<BodyType, ReturnType> implements Process
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		// LOG.info("Entering: " + this.getClass().getName());
 		ReturnType result = null;
 
 		if (Boolean.TRUE.equals(exchange.getIn().getHeader("killSwitch", Boolean.class))) {
@@ -101,6 +100,5 @@ public abstract class AbstractProcessor<BodyType, ReturnType> implements Process
 	protected abstract boolean propagateHeaders();
 
 	protected abstract boolean propagateAttachments();
-
 
 }

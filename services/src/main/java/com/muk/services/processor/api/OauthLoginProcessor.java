@@ -167,9 +167,6 @@ public class OauthLoginProcessor extends AbstractRestProcessor<OauthLoginRequest
 		final UriComponents uri = UriComponentsBuilder
 				.fromUriString(exchange.getIn().getHeader(Exchange.HTTP_URI, String.class)).build();
 		final List<String> cookies = new ArrayList<String>();
-		//		cookies.add("X-Uaa-Csrf=;path=/"
-		//				+ StringUtils.join(uri.getPathSegments().subList(0, uri.getPathSegments().size() - 2), "/")
-		//				+ ";max-age=0;expires=" + cookieExpires);
 		cookies.add("X-Uaa-Csrf=;path=" + uri.getPath() + ";max-age=0;expires=" + cookieExpires);
 		cookies.add("JSESSIONID=;path=" + uri.getPath() + ";max-age=0;expires=" + cookieExpires);
 		cookies.add("Current-User=;path=" + uri.getPath() + ";max-age=0;expires=" + cookieExpires);
