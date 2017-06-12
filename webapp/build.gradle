@@ -36,7 +36,6 @@ sourceSets {
 configurations {
 	integrationTestCompile.extendsFrom testCompile
 	integrationTestRuntime.extendsFrom testRuntime
-	remoteArchive.extendsFrom runtime
 }
 
 dependencies {

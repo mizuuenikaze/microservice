@@ -19,13 +19,15 @@ public class DefaultPaymentFacade implements PaymentFacade {
 	@Inject
 	PaymentService paypalPaymentService;
 
+	@Inject
+	PaymentService stripePaymentService;
+
 	@Override
 	public Map<String, Object> startPayment(PaymentRequest paymentRequest, UriComponents redirectComponents) {
 		Map<String, Object> response = new HashMap<String, Object>();
+		final ObjectNode payload = JsonNodeFactory.instance.objectNode();
 
 		if (ServiceConstants.PaymentMethods.paypalExpress.equals(paymentRequest.getPaymentMethod())) {
-			final ObjectNode payload = JsonNodeFactory.instance.objectNode();
-
 			payload.put("intent", "sale");
 			final ObjectNode redirectUrls = payload.putObject("redirect_urls");
 			redirectUrls.put("return_url", redirectComponents.toUriString() + "/id/redirect");
@@ -38,6 +40,14 @@ public class DefaultPaymentFacade implements PaymentFacade {
 			transaction.putObject("amount").put("total", paymentRequest.getPrice()).put("currency", "USD");
 
 			response = paypalPaymentService.startPayment(payload);
+		} else if (ServiceConstants.PaymentMethods.stripe.equals(paymentRequest.getPaymentMethod())) {
+			payload.put("amount", (long) Math.floor(paymentRequest.getPrice() * 100d));
+			payload.put("currency", "usd");
+			payload.put("description", paymentRequest.getService());
+			payload.put("source", paymentRequest.getInfo());
+
+			response = stripePaymentService.startPayment(payload);
+
 		}
 
 		return response;

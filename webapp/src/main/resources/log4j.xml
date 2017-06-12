@@ -55,11 +55,11 @@
 	</logger>
 
 	<logger name="org.apache.http.wire">
-		<level value="DEBUG" />
+		<level value="ERROR" />
 	</logger>
 
 	<logger name="org.apache.http.client">
-		<level value="DEBUG" />
+		<level value="ERRROR" />
 	</logger>
 
 	<root>

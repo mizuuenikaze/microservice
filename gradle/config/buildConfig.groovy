@@ -44,6 +44,10 @@ environments {
 						uri = 'https://api.sandbox.paypal.com/v1'
 						clientId ='ATIGpVdflSW-kHeroHS6HzNFe-jWMIBetviFFynwU1o1XBN_h_9HAP48tStmZuC65GETL7ql4Pe74_fT'
 					}
+					stripe {
+						uri = 'https://api.stripe.com/v1'
+						clientId = 'stripe'
+					}
 				}
 				camel {
 					camel {
@@ -87,7 +91,7 @@ environments {
 					}
 					oauth {
 						clientId = 'mukapi'
-						server = 'https://localhost/uaa'
+						server = 'https://localhost:8080/uaa'
 						tokenPath = '/oauth/token'
 						userInfoPath = '/userinfo'
 						checkTokenPath = '/check_token'
@@ -96,6 +100,10 @@ environments {
 					paypal {
 						uri = 'https://api.paypal.com/v1'
 						clientId ='?'
+					}
+					stripe {
+						uri = 'https://api.stripe.com/v1'
+						clientId = 'stripe'
 					}
 				}
 				camel {

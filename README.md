@@ -1,7 +1,7 @@
-# Camel as an api provider #
+# Camel as an api provider
 
 
-### What does this provide? ###
+### What does this provide?
 
 * Primarily a restful api in sync with a spa application.
 
@@ -17,15 +17,15 @@
 * How to run tests
 	* The tests are junit tests.  In eclipse, you can run them in the IDE.  A full build will also run the tests.
 
-### Eclipse setup ###
+### Eclipse setup
 
 * Build your eclipse project by executing ./gradlew cleanEclipse eclipse
 * \>\>\> Import eclipse preferences from /eclipse at the root of the repo. <<<
 * Create default vm args in your preferences --> installed JREs
 	* -D custom.logging.root=/tmp # this sets up the log file location on your file system.
 
-### Oauth2 ###
-* You can be authenticated and authorized to use the various endpoints by setting up a system that supports oauth2.  In this implementation, you call a special endpoint /tokenLogin as a client redirect_uri in uaa so that the service can request an access token and get your user info from the resource server.
+### Oauth2
+* You can be authenticated and authorized to use the various endpoints by setting up a system that supports oauth2.  In this implementation, you call a special /admin/login endpoint that uses uaa so that the service can request an access token and get your user info from the resource server.
 
 * This implementation is done against the cloud foundry user account and authentication server (UAA).  Clone it at git@github.com:cloudfoudry/uaa.git. 
 	* Create Users as needed.
@@ -33,10 +33,10 @@
 	* Put the secret in the keystore.
 	* Profit...
 
-### UAA ###
+### UAA
 * The war is to be deployed to tomcat and can be configured with the provided webapp/src/main/webapp/resources/uaa.yml file in a development environment.
 
-### keystores ###
+### keystores
 * The gradle/config/buildConfig.groovy file has some configuration values for the location and password to a keystore that will hold sensitive values.
 	* Depends on JCE, so download the correct policy files to update your jdk/jre.
 	* Must have an existing JCEKS keystore file. For example:

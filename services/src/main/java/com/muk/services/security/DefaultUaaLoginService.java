@@ -35,12 +35,25 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.muk.services.api.SecurityConfigurationService;
 import com.muk.services.api.UaaLoginService;
 
+/**
+ *
+ * Implements the login sequence with UAA to provide a custom login flow without spring mvc.
+ * <p>
+ * The UAA login server requirements are based on a manual browser login. However with an SPA, it is not unreasonable to
+ * want a highly customized login flow. Since this would be via xhr or fetch, there are header and cookie restrictions
+ * that make it impossible to fulfill the spring mvc requirements to successfully login. This simplifies the login
+ * process for an SPA to satisfy the auth code oauth flow.
+ * <p>
+ * Supports multiple clients as long as an entry is available in the internal keystore.
+ *
+ */
 public class DefaultUaaLoginService implements UaaLoginService {
 	private static final String CSRF = "X-Uaa-Csrf";
 	private static final Pattern csrfPat = Pattern.compile("X-Uaa-Csrf=(?<csrf>[^;]+)");
 
 	@Inject
-	private RestTemplate genericRestTemplate;
+	@Qualifier("genericRestTemplate")
+	private RestTemplate restTemplate;
 
 	@Inject
 	@Qualifier("securityConfigurationService")
@@ -93,14 +106,11 @@ public class DefaultUaaLoginService implements UaaLoginService {
 		// authorize
 		final ResponseEntity<JsonNode> authResponse = exchangeForType(
 				uriBuilder.cloneBuilder().pathSegment("oauth").pathSegment("authorize")
-				.queryParam("response_type", "code").queryParam("client_id", clientId)
-				.queryParam("redirect_uri", inUrlComponents.toUriString()).build().toUriString(),
+						.queryParam("response_type", "code").queryParam("client_id", clientId)
+						.queryParam("redirect_uri", inUrlComponents.toUriString()).build().toUriString(),
 				HttpMethod.GET, null, headers, JsonNode.class);
 
 		if (authResponse.getStatusCode() == HttpStatus.OK) {
-			//			final HttpCookie savedCsrfCookie = findCookie(cookies, "X-Uaa-Csrf");
-			//			savedCsrfCookie.setPath("/" + StringUtils.join(
-			//					inUrlComponents.getPathSegments().subList(0, inUrlComponents.getPathSegments().size() - 2), "/"));
 			removeCookie(cookies, "X-Uaa-Csrf");
 			cookies.addAll(authResponse.getHeaders().get(HttpHeaders.SET_COOKIE));
 			// return approval data
@@ -117,8 +127,6 @@ public class DefaultUaaLoginService implements UaaLoginService {
 					parsedCookie.setPath(inUrlComponents.getPath());
 					((List<String>) responsePayload.get(HttpHeaders.SET_COOKIE)).add(httpCookieToString(parsedCookie));
 				}
-
-				//((List<String>) responsePayload.get(HttpHeaders.SET_COOKIE)).add(httpCookieToString(savedCsrfCookie));
 			}
 
 			responsePayload.put("json", authResponse.getBody());
@@ -172,7 +180,7 @@ public class DefaultUaaLoginService implements UaaLoginService {
 			headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 		}
 
-		final ResponseEntity<T> response = genericRestTemplate.exchange(url, method,
+		final ResponseEntity<T> response = restTemplate.exchange(url, method,
 				new HttpEntity<MultiValueMap<String, String>>(formData, headers), returnType);
 
 		return response;
@@ -189,19 +197,6 @@ public class DefaultUaaLoginService implements UaaLoginService {
 		}
 
 		return StringUtils.EMPTY;
-	}
-
-	private HttpCookie findCookie(List<String> cookies, String name) {
-		final Iterator<String> iterator = cookies.iterator();
-
-		while (iterator.hasNext()) {
-			final String current = iterator.next();
-			if (current.startsWith(name)) {
-				return HttpCookie.parse(current).get(0);
-			}
-		}
-
-		return null;
 	}
 
 	private void removeCookie(List<String> cookies, String name) {
@@ -231,8 +226,8 @@ public class DefaultUaaLoginService implements UaaLoginService {
 		final String cookieExpires = DateTimeFormatter.RFC_1123_DATE_TIME.format(now);
 		final StringBuilder cookieBuilder = new StringBuilder();
 		cookieBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";path=")
-		.append(cookie.getPath()).append(";max-age=").append(cookie.getMaxAge()).append(";expires=")
-		.append(cookieExpires);
+				.append(cookie.getPath()).append(";max-age=").append(cookie.getMaxAge()).append(";expires=")
+				.append(cookieExpires);
 
 		if (cookie.isHttpOnly()) {
 			cookieBuilder.append(";HttpOnly");

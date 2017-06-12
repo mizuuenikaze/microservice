@@ -74,9 +74,8 @@ import com.muk.services.api.QueueDemultiplexer;
 import com.muk.services.api.SecurityConfigurationService;
 import com.muk.services.api.StatusHandler;
 import com.muk.services.api.UaaLoginService;
-import com.muk.services.api.builder.RestTemplateBuilder;
-import com.muk.services.api.builder.impl.RestTemplateBuilderImpl;
 import com.muk.services.api.impl.PayPalPaymentService;
+import com.muk.services.api.impl.StripePaymentService;
 import com.muk.services.commerce.CryptoServiceImpl;
 import com.muk.services.csv.CsvDocumentCache;
 import com.muk.services.csv.DefaultCsvDocumentCache;
@@ -133,7 +132,9 @@ public class ServiceConfig {
 		svc.setOauthTokenPath(environment.getProperty(SecurityConfigurationService.OAUTH_TOKEN_PATH));
 		svc.setOauthUserInfoPath(environment.getProperty(SecurityConfigurationService.OAUTH_USERINFO_PATH));
 		svc.setPayPalClientId(environment.getProperty(SecurityConfigurationService.PAYPAL_CLIENT_ID));
+		svc.setStripeClientId(environment.getProperty(SecurityConfigurationService.STRIPE_CLIENT_ID));
 		svc.setPayPalUri(environment.getProperty(SecurityConfigurationService.PAYPAL_URI));
+		svc.setStripeUri(environment.getProperty(SecurityConfigurationService.STRIPE_URI));
 		svc.setSalt(
 				environment.getProperty(SecurityConfigurationService.OAUTH_SALT, "12343&DEFAULT**<>\\{88*)SALT?><"));
 		return svc;
@@ -150,27 +151,6 @@ public class ServiceConfig {
 		mapper.registerModule(new JavaTimeModule());
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
 		return mapper;
-	}
-
-	/**
-	 * @return A custom interface to muk api using rest template.
-	 */
-	@Bean(name = "restTemplateBuilder")
-	public RestTemplateBuilder mukCustomBuilder() {
-		final RestTemplateBuilderImpl builder = new RestTemplateBuilderImpl();
-		builder.setRestTemplate(mukRestTemplate());
-		return builder;
-	}
-
-	/**
-	 *
-	 * @return A custom streaming interface to muk api using rest template.
-	 */
-	@Bean(name = "streamingRestTemplateBuilder")
-	public RestTemplateBuilder streamingRestTemplateBuilder() {
-		final RestTemplateBuilderImpl builder = new RestTemplateBuilderImpl();
-		builder.setRestTemplate(mukStreamingRestTemplate());
-		return builder;
 	}
 
 	@Bean(name = "oauthUserCache")
@@ -342,10 +322,15 @@ public class ServiceConfig {
 		return new PayPalPaymentService();
 	}
 
+	@Bean
+	public PaymentService stripePaymentService() {
+		return new StripePaymentService();
+	}
+
 	/* Rest Client setup */
-	@Bean(name = { "mukRestTemplate" })
-	public RestTemplate mukRestTemplate() {
-		final RestTemplate restTemplate = new RestTemplate(mukHttpRequestFactory());
+	@Bean
+	public RestTemplate nonPerformantRestTemplate() {
+		final RestTemplate restTemplate = new RestTemplate(nonPerformantHttpRequestFactory());
 		final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 
 		for (final HttpMessageConverter<?> converter : converters) {
@@ -367,9 +352,9 @@ public class ServiceConfig {
 		return restTemplate;
 	}
 
-	@Bean(name = { "mukStreamingRestTemplate" })
-	public RestTemplate mukStreamingRestTemplate() {
-		final RestTemplate restTemplate = new RestTemplate(mukStreamingHttpRequestFactory());
+	@Bean
+	public RestTemplate streamingRestTemplate() {
+		final RestTemplate restTemplate = new RestTemplate(nonPerformantStreamingHttpRequestFactory());
 		final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
 
 		for (final HttpMessageConverter<?> converter : converters) {
@@ -391,7 +376,7 @@ public class ServiceConfig {
 		return restTemplate;
 	}
 
-	@Bean(name = { "genericRestTemplate" })
+	@Bean
 	public RestTemplate genericRestTemplate() {
 		final RestTemplate restTemplate = new RestTemplate(genericHttpRequestFactory());
 		final List<HttpMessageConverter<?>> converters = restTemplate.getMessageConverters();
@@ -415,20 +400,20 @@ public class ServiceConfig {
 		return restTemplate;
 	}
 
-	@Bean(name = { "mukRequestFactory" })
-	public ClientHttpRequestFactory mukHttpRequestFactory() {
-		return new HttpComponentsClientHttpRequestFactory(mukHttpClient());
+	@Bean
+	public ClientHttpRequestFactory nonPerformantHttpRequestFactory() {
+		return new HttpComponentsClientHttpRequestFactory(nonPerfomantHttpClient());
 	}
 
-	@Bean(name = { "genericRequestFactory" })
+	@Bean
 	public ClientHttpRequestFactory genericHttpRequestFactory() {
 		return new HttpComponentsClientHttpRequestFactory(genericHttpClient());
 	}
 
-	@Bean(name = { "mukStreamingRequestFactory" })
-	public ClientHttpRequestFactory mukStreamingHttpRequestFactory() {
+	@Bean
+	public ClientHttpRequestFactory nonPerformantStreamingHttpRequestFactory() {
 		final HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(
-				mukHttpClient());
+				nonPerfomantHttpClient());
 
 		factory.setBufferRequestBody(false);
 		return factory;
@@ -439,8 +424,8 @@ public class ServiceConfig {
 		return Executors.newFixedThreadPool(2);
 	}
 
-	@Bean(name = { "mukHttpClient" })
-	public CloseableHttpClient mukHttpClient() {
+	@Bean
+	public CloseableHttpClient nonPerfomantHttpClient() {
 		final HttpClientConnectionManager manager = poolingConnectionManager();
 		final Builder reqConfig = RequestConfig.custom();
 		reqConfig.setConnectionRequestTimeout(20000);
@@ -448,7 +433,7 @@ public class ServiceConfig {
 		reqConfig.setCircularRedirectsAllowed(false);
 
 		final HttpClientBuilder builder = HttpClientBuilder.create().setConnectionManager(manager)
-				.setDefaultRequestConfig(reqConfig.build()).setKeepAliveStrategy(mukKeepAliveStrategy())
+				.setDefaultRequestConfig(reqConfig.build()).setKeepAliveStrategy(nonPerformantKeepAliveStrategy())
 				.disableConnectionState().disableCookieManagement().addInterceptorLast(mukRequestInterceptor());
 
 		staleConnectionExecutor().execute(new IdleConnectionMonitor(manager));
@@ -456,12 +441,12 @@ public class ServiceConfig {
 		return builder.build();
 	}
 
-	@Bean(name = { "genericHttpClient" })
+	@Bean
 	public CloseableHttpClient genericHttpClient() {
 		final HttpClientConnectionManager manager = genericConnectionManager();
 		final Builder reqConfig = RequestConfig.custom();
-		reqConfig.setConnectionRequestTimeout(20000);
-		reqConfig.setSocketTimeout(10000);
+		reqConfig.setConnectionRequestTimeout(5000);
+		reqConfig.setSocketTimeout(5000);
 		reqConfig.setCircularRedirectsAllowed(false);
 		reqConfig.setRedirectsEnabled(false);
 		reqConfig.setCookieSpec(CookieSpecs.IGNORE_COOKIES);
@@ -474,7 +459,7 @@ public class ServiceConfig {
 		return builder.build();
 	}
 
-	@Bean(name = { "poolingConnectionManager" })
+	@Bean
 	public HttpClientConnectionManager poolingConnectionManager() {
 		final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
 		connManager.setMaxTotal(200);
@@ -483,7 +468,7 @@ public class ServiceConfig {
 		return connManager;
 	}
 
-	@Bean(name = { "genericConnectionManager" })
+	@Bean
 	public HttpClientConnectionManager genericConnectionManager() {
 		final PoolingHttpClientConnectionManager connManager = new PoolingHttpClientConnectionManager();
 		connManager.setMaxTotal(10);
@@ -492,13 +477,13 @@ public class ServiceConfig {
 		return connManager;
 	}
 
-	@Bean(name = { "mukRequestInterceptor" })
+	@Bean
 	public HttpRequestInterceptor mukRequestInterceptor() {
 		return new DefaultRequestInterceptor();
 	}
 
-	@Bean(name = { "keepAliveStrategy" })
-	public ConnectionKeepAliveStrategy mukKeepAliveStrategy() {
+	@Bean
+	public ConnectionKeepAliveStrategy nonPerformantKeepAliveStrategy() {
 		return new DefaultKeepAliveStrategy();
 	}
 }

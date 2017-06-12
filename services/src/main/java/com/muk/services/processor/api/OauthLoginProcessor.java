@@ -109,7 +109,9 @@ public class OauthLoginProcessor extends AbstractRestProcessor<OauthLoginRequest
 					link.setHref(hrefDenyBuilder.build().toUriString());
 					links.add(link);
 
-					response.setLinks(links);
+					final ObjectNode hateoasNode = jsonObjectMapper.createObjectNode();
+					hateoasNode.set("links", jsonObjectMapper.valueToTree(links));
+					tokenResponse.put("json", hateoasNode);
 
 					exchange.getOut().setHeader(HttpHeaders.SET_COOKIE, loginResponse.get(HttpHeaders.SET_COOKIE));
 					exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, Status.SUCCESS_OK.getCode());

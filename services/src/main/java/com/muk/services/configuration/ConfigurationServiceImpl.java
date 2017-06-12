@@ -34,7 +34,9 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 	private String oauthUserInfoPath;
 	private String oauthCheckTokenPath;
 	private String payPalClientId;
+	private String stripeClientId;
 	private String payPalUri;
+	private String stripeUri;
 	private String salt;
 
 	@Override
@@ -134,6 +136,24 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 
 	public void setPayPalUri(String payPalUri) {
 		this.payPalUri = payPalUri;
+	}
+
+	@Override
+	public String getStripeClientId() {
+		return stripeClientId;
+	}
+
+	public void setStripeClientId(String stripeClientId) {
+		this.stripeClientId = stripeClientId;
+	}
+
+	@Override
+	public String getStripeUri() {
+		return stripeUri;
+	}
+
+	public void setStripeUri(String stripeUri) {
+		this.stripeUri = stripeUri;
 	}
 
 }

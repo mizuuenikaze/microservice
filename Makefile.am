@@ -1,5 +1,5 @@
 #
-# Custom makefile for a ampersand based frontend
+# Custom makefile for gradle based java applications
 #
 
 

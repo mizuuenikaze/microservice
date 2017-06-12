@@ -11,6 +11,7 @@ public class PaymentRequest {
 	private Double price;
 	private String paymentId;
 	private String payerId;
+	private String info;
 
 	public String getPaymentMethod() {
 		return paymentMethod;
@@ -58,6 +59,14 @@ public class PaymentRequest {
 
 	public void setPayerId(String payerId) {
 		this.payerId = payerId;
+	}
+
+	public String getInfo() {
+		return info;
+	}
+
+	public void setInfo(String info) {
+		this.info = info;
 	}
 
 }
