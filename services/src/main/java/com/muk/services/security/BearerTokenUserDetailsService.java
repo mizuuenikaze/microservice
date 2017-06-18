@@ -273,6 +273,11 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			response = new ResponseEntity<String>("", httpEx.getStatusCode());
 
 			if (httpEx instanceof HttpStatusCodeException) {
+				if (httpEx.getStatusCode() == HttpStatus.BAD_REQUEST
+						&& ((HttpStatusCodeException) httpEx).getResponseBodyAsString().contains("Token has expired")) {
+					response = new ResponseEntity<String>("", HttpStatus.UNAUTHORIZED);
+				}
+
 				if (LOG.isDebugEnabled()) {
 					LOG.debug("Status Code: {}", httpEx.getStatusCode().value());
 					LOG.debug("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
