@@ -27,6 +27,7 @@ public interface SecurityConfigurationService {
 	static final String STRIPE_CLIENT_ID = "stripe.clientId";
 	static final String PAYPAL_URI = "paypal.uri";
 	static final String STRIPE_URI = "stripe.uri";
+	static final String COUCHDB_URI = "couchdb.uri";
 	static final String OAUTH_SALT = "oauth.salt";
 
 	String getOauthServer();
@@ -46,6 +47,8 @@ public interface SecurityConfigurationService {
 	String getPayPalUri();
 
 	String getStripeUri();
+
+	String getCouchDbUri();
 
 	String getSalt();
 }
