@@ -65,6 +65,7 @@ import com.muk.ext.security.impl.DefaultKeystoreService;
 import com.muk.ext.security.impl.DefaultNonceService;
 import com.muk.services.api.BarcodeService;
 import com.muk.services.api.CachingOauthUserDetailsService;
+import com.muk.services.api.CmsService;
 import com.muk.services.api.ConfigurationService;
 import com.muk.services.api.CryptoService;
 import com.muk.services.api.CsvImportService;
@@ -74,6 +75,7 @@ import com.muk.services.api.QueueDemultiplexer;
 import com.muk.services.api.SecurityConfigurationService;
 import com.muk.services.api.StatusHandler;
 import com.muk.services.api.UaaLoginService;
+import com.muk.services.api.impl.CouchDbCmsService;
 import com.muk.services.api.impl.PayPalPaymentService;
 import com.muk.services.api.impl.StripePaymentService;
 import com.muk.services.commerce.CryptoServiceImpl;
@@ -90,7 +92,7 @@ import com.muk.services.processor.NopProcessor;
 import com.muk.services.processor.QueueDemultiplexerImpl;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
-import com.muk.services.processor.api.FeatureApiProcessor;
+import com.muk.services.processor.api.CmsApiProcessor;
 import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
 import com.muk.services.processor.api.PaymentApiProcessor;
@@ -135,6 +137,7 @@ public class ServiceConfig {
 		svc.setStripeClientId(environment.getProperty(SecurityConfigurationService.STRIPE_CLIENT_ID));
 		svc.setPayPalUri(environment.getProperty(SecurityConfigurationService.PAYPAL_URI));
 		svc.setStripeUri(environment.getProperty(SecurityConfigurationService.STRIPE_URI));
+		svc.setCouchDbUri(environment.getProperty(SecurityConfigurationService.COUCHDB_URI));
 		svc.setSalt(
 				environment.getProperty(SecurityConfigurationService.OAUTH_SALT, "12343&DEFAULT**<>\\{88*)SALT?><"));
 		return svc;
@@ -225,7 +228,7 @@ public class ServiceConfig {
 
 	@Bean
 	public Processor featureApiProcessor() {
-		return new FeatureApiProcessor();
+		return new CmsApiProcessor();
 	}
 
 	@Bean
@@ -325,6 +328,11 @@ public class ServiceConfig {
 	@Bean
 	public PaymentService stripePaymentService() {
 		return new StripePaymentService();
+	}
+
+	@Bean
+	public CmsService cmsService() {
+		return new CouchDbCmsService();
 	}
 
 	/* Rest Client setup */

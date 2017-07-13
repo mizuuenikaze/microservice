@@ -23,7 +23,7 @@ import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
 
 import com.muk.ext.core.json.RestReply;
-import com.muk.ext.core.json.model.Feature;
+import com.muk.ext.core.json.model.CmsDoc;
 import com.muk.ext.core.json.model.OauthLoginRequest;
 import com.muk.ext.core.json.model.OauthLoginResponse;
 import com.muk.ext.core.json.model.PatchRequest;
@@ -34,7 +34,7 @@ import com.muk.services.exchange.RestConstants;
 import com.muk.services.json.RouteAction;
 import com.muk.services.processor.GlobalRestExceptionProcessor;
 import com.muk.services.processor.RouteActionProcessor;
-import com.muk.services.processor.api.FeatureApiProcessor;
+import com.muk.services.processor.api.CmsApiProcessor;
 import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
 import com.muk.services.processor.api.PaymentApiProcessor;
@@ -89,8 +89,8 @@ public class RestRouter extends SpringRouteBuilder {
 		rest(RestConstants.Rest.apiPath).get("/ping").outType(RestReply.class).consumes(jsonMediaType)
 				.produces(jsonMediaType).to("direct:ping");
 
-		rest(RestConstants.Rest.apiPath).get("/features").outType(Feature[].class).consumes(jsonMediaType)
-				.produces(jsonMediaType).to("direct:feature");
+		rest(RestConstants.Rest.apiPath).get("/cms/{docId}").outType(CmsDoc.class).consumes(jsonMediaType)
+				.produces(jsonMediaType).to("direct:cms");
 
 		rest(RestConstants.Rest.apiPath + "/payments").post().type(PaymentRequest.class).outType(PaymentResponse.class)
 				.consumes(jsonMediaType).produces(jsonMediaType).to("direct:payment").patch("/{rId}")
@@ -110,8 +110,8 @@ public class RestRouter extends SpringRouteBuilder {
 		// protected routes
 		from("direct:ping").process("authPrincipalProcessor").policy("restUserPolicy")
 				.process(lookup(PingApiProcessor.class)).bean("statusHandler", "logRestStatus");
-		from("direct:feature").process("authPrincipalProcessor").policy("restUserPolicy")
-				.process(lookup(FeatureApiProcessor.class)).bean("statusHandler", "logRestStatus");
+		from("direct:cms").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(CmsApiProcessor.class)).bean("statusHandler", "logRestStatus");
 		from("direct:payment").process("authPrincipalProcessor").policy("restUserPolicy")
 				.process(lookup(PaymentApiProcessor.class)).bean("statusHandler", "logRestStatus");
 		from("direct:paymentIntent").process("authPrincipalProcessor").policy("restUserPolicy")

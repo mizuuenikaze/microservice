@@ -37,6 +37,7 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 	private String stripeClientId;
 	private String payPalUri;
 	private String stripeUri;
+	private String couchDbUri;
 	private String salt;
 
 	@Override
@@ -156,4 +157,12 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 		this.stripeUri = stripeUri;
 	}
 
+	@Override
+	public String getCouchDbUri() {
+		return couchDbUri;
+	}
+
+	public void setCouchDbUri(String couchDbUri) {
+		this.couchDbUri = couchDbUri;
+	}
 }

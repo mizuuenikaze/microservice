@@ -48,6 +48,9 @@ environments {
 						uri = 'https://api.stripe.com/v1'
 						clientId = 'stripe'
 					}
+					couchdb {
+						uri = 'http://localhost:5984'
+					}
 				}
 				camel {
 					camel {
@@ -104,6 +107,9 @@ environments {
 					stripe {
 						uri = 'https://api.stripe.com/v1'
 						clientId = 'stripe'
+					}
+					couchdb {
+						uri = 'http://localhost:5984'
 					}
 				}
 				camel {

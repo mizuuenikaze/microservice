@@ -131,7 +131,7 @@ project(':webapp') {
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '3.4.1'
+	gradleVersion = '4.0'
 }
 
 // epack alludes to a task that packages a project to be used in a portage ebuild
