@@ -5,6 +5,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.util.UriComponents;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -45,6 +46,15 @@ public class DefaultPaymentFacade implements PaymentFacade {
 			payload.put("currency", "usd");
 			payload.put("description", paymentRequest.getService());
 			payload.put("source", paymentRequest.getInfo());
+			payload.put("receipt_email", paymentRequest.getEmail());
+
+			if (paymentRequest.getMetadata() != null) {
+				final ObjectNode mds = payload.putObject("metadata");
+
+				for (final Pair<String, String> pair : paymentRequest.getMetadata()) {
+					mds.put(pair.getLeft(), pair.getRight());
+				}
+			}
 
 			response = stripePaymentService.startPayment(payload);
 

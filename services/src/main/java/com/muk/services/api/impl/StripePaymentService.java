@@ -127,7 +127,18 @@ public class StripePaymentService implements PaymentService {
 
 		while (nodes.hasNext()) {
 			final Map.Entry<String, JsonNode> entry = nodes.next();
-			body.add(entry.getKey(), entry.getValue().asText());
+
+			if (entry.getValue().isObject()) {
+				final String key = entry.getKey();
+				final Iterator<Entry<String, JsonNode>> metadataNodes = entry.getValue().fields();
+
+				while (metadataNodes.hasNext()) {
+					final Map.Entry<String, JsonNode> element = metadataNodes.next();
+					body.add(key + "[\"" + element.getKey() + "\"]", element.getValue().asText());
+				}
+			} else {
+				body.add(entry.getKey(), entry.getValue().asText());
+			}
 		}
 
 		return restTemplate.postForEntity(securityCfgService.getStripeUri() + path,

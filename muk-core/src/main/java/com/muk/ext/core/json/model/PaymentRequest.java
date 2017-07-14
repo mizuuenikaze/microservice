@@ -1,5 +1,9 @@
 package com.muk.ext.core.json.model;
 
+import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -12,6 +16,8 @@ public class PaymentRequest {
 	private String paymentId;
 	private String payerId;
 	private String info;
+	private List<Pair<String, String>> metadata;
+	private String email;
 
 	public String getPaymentMethod() {
 		return paymentMethod;
@@ -67,6 +73,22 @@ public class PaymentRequest {
 
 	public void setInfo(String info) {
 		this.info = info;
+	}
+
+	public List<Pair<String, String>> getMetadata() {
+		return metadata;
+	}
+
+	public void setMetadata(List<Pair<String, String>> metadata) {
+		this.metadata = metadata;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 }
