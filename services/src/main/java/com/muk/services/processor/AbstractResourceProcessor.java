@@ -29,10 +29,15 @@ public abstract class AbstractResourceProcessor<BodyType, ReturnType>
 		final UriComponents redirectComponents = UriComponentsBuilder
 				.fromUriString(exchange.getIn().getHeader(Exchange.HTTP_URI, String.class)).replaceQuery(null).build();
 
+		// Consider async operations as primary
+		int successCode = Status.SUCCESS_ACCEPTED.getCode();
+
 		try {
 			switch (httpMethod) {
 			case "GET":
 				serviceResponse = fetch(body, exchange, redirectComponents);
+				// A get will always return actionable info, never an async operation
+				successCode = Status.SUCCESS_OK.getCode();
 				break;
 			case "POST":
 				serviceResponse = affect(body, exchange, redirectComponents);
@@ -54,7 +59,7 @@ public abstract class AbstractResourceProcessor<BodyType, ReturnType>
 				errorNode.put("message", (String) serviceResponse.get("error"));
 				response = jsonObjectMapper.treeToValue((JsonNode) errorNode, getReturnClass());
 			} else if (serviceResponse.containsKey("json")) {
-				exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, Status.SUCCESS_ACCEPTED.getCode());
+				exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, successCode);
 				response = jsonObjectMapper.treeToValue((JsonNode) serviceResponse.get("json"), getReturnClass());
 			} else if (serviceResponse.containsKey("success") && Boolean.TRUE.equals(serviceResponse.get("success"))) {
 				exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, Status.SUCCESS_NO_CONTENT.getCode());
