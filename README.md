@@ -6,9 +6,9 @@
 * Primarily a restful api in sync with a spa application.
 
 ### How do I get set up? ###
-* This is a multi-project setup that can be built with
-	* ./gradlew build -Penv=dev
-	* ./gradelw build -x test -x integrationtest -Penv=dev # skip tests
+* This is a multi-project setup that can be built with gradle that is wrapped in a makefile.  The debug configuration executes gradle build.  The production configuration builds and deploys to /opt.
+	* ./configure --enable-debug=yes && make
+	* ./configure --enable-debug=no --prefix=/opt --localstatedir=/var/lib && make
 
 * Building a production release
 	* SOURCE_BUILD_NUMBER=N ./gradlew clean epack -Penv=prod

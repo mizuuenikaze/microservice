@@ -1,5 +1,5 @@
 dnl Process this file with autoconf
-AC_INIT([microservice], [1.8.4])
+AC_INIT([microservice], [1.9.0])
 AC_PREREQ(2.69)
 AM_INIT_AUTOMAKE([foreign nostdinc])
 dnl program checks

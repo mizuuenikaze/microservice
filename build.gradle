@@ -29,10 +29,11 @@ allprojects {
 	version = project.getProperty('v')
 	ext {
 		config = parsedConfig
-		springVersion='4.3.7.RELEASE'
-		restletVersion='2.3.9'
-		camelVersion='2.19.0'
-		jacksonVersion='2.9.0.pr2'
+		springVersion='5.0.1.RELEASE'
+		springSecVersion='4.2.3.RELEASE'
+		restletVersion='2.3.12'
+		camelVersion='2.20.1'
+		jacksonVersion='2.9.2'
 		applicationDefaultJvmArgs = ['-Dcustom.logging.root=' + parsedConfig.logging, '-Dcustom.application.keystore=' + parsedConfig.keystorefile, '-Dcustom.application.keystorepass=' + parsedConfig.keystorepass]
 		buildTimestamp = new Date().format('yyyy-MM-dd HH:mm:ss')
 	}
@@ -131,7 +132,7 @@ project(':webapp') {
 }
 
 task wrapper(type: Wrapper) {
-	gradleVersion = '4.0'
+	gradleVersion = '4.3.1'
 }
 
 // epack alludes to a task that packages a project to be used in a portage ebuild
