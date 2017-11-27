@@ -37,17 +37,16 @@ public class CouchDbCmsService implements CmsService {
 	private SecurityConfigurationService securityCfgService;
 
 	@Override
-	public Map<String, Object> fetchDocById(String docId) {
+	public Map<String, Object> fetchDocById(String db, String docId, JsonQuery jq) {
 		final Map<String, Object> response = new HashMap<String, Object>();
 		final MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
 		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
 		final HttpEntity<Object> request = new HttpEntity<Object>(headers);
 		final ResponseEntity<JsonNode> couchResponse = restTemplate.exchange(
-				securityCfgService.getCouchDbUri() + "/cms/" + docId, HttpMethod.GET, request, JsonNode.class);
+				securityCfgService.getCouchDbUri() + "/" + db + "/" + docId, HttpMethod.GET, request, JsonNode.class);
 
 		try {
-			final JsonQuery jq = JsonQuery.compile("{id: ._id, page: .sections}");
 			final List<JsonNode> nodes = jq.apply(couchResponse.getBody());
 			response.put("json", nodes.get(0));
 		} catch (final JsonQueryException jsonEx) {

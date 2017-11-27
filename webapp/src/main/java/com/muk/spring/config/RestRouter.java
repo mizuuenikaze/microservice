@@ -23,6 +23,8 @@ import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
 
 import com.muk.ext.core.json.RestReply;
+import com.muk.ext.core.json.model.BlogDoc;
+import com.muk.ext.core.json.model.BlogSliceSummary;
 import com.muk.ext.core.json.model.CmsDoc;
 import com.muk.ext.core.json.model.OauthLoginRequest;
 import com.muk.ext.core.json.model.OauthLoginResponse;
@@ -34,6 +36,8 @@ import com.muk.services.exchange.RestConstants;
 import com.muk.services.json.RouteAction;
 import com.muk.services.processor.GlobalRestExceptionProcessor;
 import com.muk.services.processor.RouteActionProcessor;
+import com.muk.services.processor.api.BlogApiProcessor;
+import com.muk.services.processor.api.BlogDocApiProcessor;
 import com.muk.services.processor.api.CmsApiProcessor;
 import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
@@ -96,6 +100,11 @@ public class RestRouter extends SpringRouteBuilder {
 				.consumes(jsonMediaType).produces(jsonMediaType).to("direct:payment").patch("/{rId}")
 				.type(PatchRequest.class).outType(PaymentResponse.class).to("direct:paymentIntent");
 
+		rest(RestConstants.Rest.apiPath).get("/blog").outType(BlogSliceSummary.class).consumes(jsonMediaType)
+				.produces(jsonMediaType).to("direct:blog");
+		rest(RestConstants.Rest.apiPath).get("/blog/entries/{docId}").outType(BlogDoc.class).consumes(jsonMediaType)
+				.produces(jsonMediaType).to("direct:blogEntries");
+
 		// direct rest routes
 
 		// camel route management
@@ -116,5 +125,8 @@ public class RestRouter extends SpringRouteBuilder {
 				.process(lookup(PaymentApiProcessor.class)).bean("statusHandler", "logRestStatus");
 		from("direct:paymentIntent").process("authPrincipalProcessor").policy("restUserPolicy")
 				.process(lookup(IntentApiProcessor.class)).bean("statusHandler", "logRestStatus");
+		from("direct:blog").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(BlogApiProcessor.class)).bean("statusHandler", "logRestStatus");
+		from("direct:blogEntries").process(lookup(BlogDocApiProcessor.class)).bean("statusHandler", "logRestStatus");
 	}
 }

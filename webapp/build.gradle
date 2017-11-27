@@ -39,25 +39,25 @@ configurations {
 }
 
 dependencies {
-	compile 'javax.validation:validation-api:2.0.0.Alpha2'
-	compile 'org.springframework.security:spring-security-web:4.2.2.RELEASE'
-	compile 'org.springframework.security:spring-security-config:4.2.2.RELEASE'
-	compile 'org.apache.felix:org.apache.felix.framework:5.6.2'
+	compile 'javax.validation:validation-api:2.0.0.Final'
+	compile 'org.apache.felix:org.apache.felix.framework:5.6.10'
+	compile group: 'org.springframework.security', name: 'spring-security-web', version: springSecVersion
+	compile group: 'org.springframework.security', name: 'spring-security-config', version: springSecVersion
 	compile group: 'org.apache.camel', name: 'camel-spring-javaconfig', version: camelVersion
 	compile group: 'org.apache.camel', name: 'camel-spring-security', version: camelVersion
 	compile group: 'org.apache.camel', name: 'camel-test-spring', version: camelVersion
 	compile group: 'org.apache.camel', name: 'camel-swagger-java', version: camelVersion
-	compile 'org.apache.activemq:activemq-kahadb-store:5.14.4'
+	compile 'org.apache.activemq:activemq-kahadb-store:5.15.2'
 	compile 'org.slf4j:slf4j-api:1.7.25'
 	compile 'org.slf4j:slf4j-log4j12:1.7.25'
 	compile 'log4j:log4j:1.2.17'
 	
 	compile group: 'org.restlet.jee', name: 'org.restlet.ext.spring', version: restletVersion
-	compile 'org.eclipse.jetty:jetty-webapp:9.4.3.v20170317'
-	compile 'org.eclipse.jetty:jetty-annotations:9.4.3.v20170317'
+	compile 'org.eclipse.jetty:jetty-webapp:9.4.7.v20170914'
+	compile 'org.eclipse.jetty:jetty-annotations:9.4.7.v20170914'
 	compile 'javax.servlet:javax.servlet-api:3.1.0'
 	
-	testCompile 'commons-io:commons-io:2.5'
+	testCompile 'commons-io:commons-io:2.6'
 }
 
 ext.mainClassName = 'com.muk.app.StandAloneEntry'
@@ -79,7 +79,7 @@ task appDebug (type: JavaExec) {
 }
 
 task integrationTest(type: Test) {
-    testClassesDir = sourceSets.integrationTest.output.classesDir
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
     outputs.upToDateWhen { false }
 }

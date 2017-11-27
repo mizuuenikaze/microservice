@@ -64,6 +64,7 @@ import com.muk.ext.security.NonceService;
 import com.muk.ext.security.impl.DefaultKeystoreService;
 import com.muk.ext.security.impl.DefaultNonceService;
 import com.muk.services.api.BarcodeService;
+import com.muk.services.api.BlogService;
 import com.muk.services.api.CachingOauthUserDetailsService;
 import com.muk.services.api.CmsService;
 import com.muk.services.api.ConfigurationService;
@@ -75,6 +76,7 @@ import com.muk.services.api.QueueDemultiplexer;
 import com.muk.services.api.SecurityConfigurationService;
 import com.muk.services.api.StatusHandler;
 import com.muk.services.api.UaaLoginService;
+import com.muk.services.api.impl.CouchDbBlogService;
 import com.muk.services.api.impl.CouchDbCmsService;
 import com.muk.services.api.impl.PayPalPaymentService;
 import com.muk.services.api.impl.StripePaymentService;
@@ -92,6 +94,8 @@ import com.muk.services.processor.NopProcessor;
 import com.muk.services.processor.QueueDemultiplexerImpl;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
+import com.muk.services.processor.api.BlogApiProcessor;
+import com.muk.services.processor.api.BlogDocApiProcessor;
 import com.muk.services.processor.api.CmsApiProcessor;
 import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
@@ -227,8 +231,18 @@ public class ServiceConfig {
 	}
 
 	@Bean
-	public Processor featureApiProcessor() {
+	public Processor cmsApiProcessor() {
 		return new CmsApiProcessor();
+	}
+
+	@Bean
+	public Processor blogApiProcessor() {
+		return new BlogApiProcessor();
+	}
+
+	@Bean
+	public Processor blogDocApiProcessor() {
+		return new BlogDocApiProcessor();
 	}
 
 	@Bean
@@ -333,6 +347,11 @@ public class ServiceConfig {
 	@Bean
 	public CmsService cmsService() {
 		return new CouchDbCmsService();
+	}
+
+	@Bean
+	public BlogService blogService() {
+		return new CouchDbBlogService();
 	}
 
 	/* Rest Client setup */

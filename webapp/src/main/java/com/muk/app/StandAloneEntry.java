@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.camel.main.MainListenerSupport;
 import org.apache.camel.main.MainSupport;
@@ -30,7 +32,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ErrorPageErrorHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -40,8 +41,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * Main class for a web application with embedded jetty. Pure restful api using
- * camel with the restlet component.
+ * Main class for a web application with embedded jetty. Pure restful api using camel with the restlet component.
  *
  */
 public class StandAloneEntry {
@@ -133,7 +133,7 @@ public class StandAloneEntry {
 					// pre-populate class map since subclasses are
 					// skipped.
 					final ClassInheritanceMap map = new ClassInheritanceMap();
-					final ConcurrentHashSet<String> set = new ConcurrentHashSet<>();
+					final Set<String> set = ConcurrentHashMap.newKeySet();
 					set.add("com.muk.spring.config.RestletWebApplicationInitializer");
 					set.add("com.muk.spring.config.SwaggerWebApplicationInitializer");
 					map.put("org.springframework.web.WebApplicationInitializer", set);

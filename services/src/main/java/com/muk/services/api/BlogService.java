@@ -18,8 +18,7 @@ package com.muk.services.api;
 
 import java.util.Map;
 
-import net.thisptr.jackson.jq.JsonQuery;
-
-public interface CmsService {
-	Map<String, Object> fetchDocById(String db, String docId, JsonQuery jq);
+public interface BlogService {
+	Map<String, Object> fetchPagedSummaryView(String mode, Long startKey, String startKeyDocId, Long limit,
+			Long offset);
 }

@@ -143,10 +143,8 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			response = new ResponseEntity<JsonNode>((JsonNode) null, httpEx.getStatusCode());
 
 			if (httpEx instanceof HttpStatusCodeException) {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Status Code: {}", httpEx.getStatusCode().value());
-					LOG.debug("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
-				}
+				LOG.error("Status Code: {}", httpEx.getStatusCode().value());
+				LOG.error("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
 			}
 		}
 
