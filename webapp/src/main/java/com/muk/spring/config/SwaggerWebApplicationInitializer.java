@@ -16,6 +16,10 @@
  *******************************************************************************/
 package com.muk.spring.config;
 
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
@@ -45,5 +49,15 @@ public class SwaggerWebApplicationInitializer implements WebApplicationInitializ
 		swaggerDispatcher.setInitParameter("api.version", "0.1");
 		swaggerDispatcher.setInitParameter("api.title", "Api Docs");
 		swaggerDispatcher.setInitParameter("api.description", "Rest Services via Camel");
+		swaggerDispatcher.setInitParameter("apiContextIdListing", "true");
+
+		final FilterRegistration.Dynamic filterRegistration = servletContext.addFilter("RestSwaggerCorsFilter",
+				"org.apache.camel.swagger.servlet.RestSwaggerCorsFilter");
+
+		// Modify the cors headers
+		// filterRegistration.setInitParameter(name, value)
+
+		filterRegistration.addMappingForServletNames(EnumSet.of(DispatcherType.REQUEST), true, "SwaggerServlet");
+
 	}
 }

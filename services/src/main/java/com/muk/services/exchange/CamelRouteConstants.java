@@ -27,6 +27,8 @@ public interface CamelRouteConstants {
 	}
 
 	interface MessageHeaders {
-		public static final String mukApiContext = "mukapicontext";
+		public static final String actionId = "mukApiActionId";
+		public static final String mukEventId = "MukEventId";
+		public static final String queueDestination = "CamelJmsDestination";
 	}
 }

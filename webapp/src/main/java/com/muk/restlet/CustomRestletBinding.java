@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright (C)  2017  mizuuenikaze inc
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *******************************************************************************/
 package com.muk.restlet;
 
 import java.net.HttpCookie;
@@ -20,27 +36,24 @@ public class CustomRestletBinding extends DefaultRestletBinding {
 
 	@Override
 	protected boolean setResponseHeader(Exchange exchange, Response message, String header, Object value) {
-		if (!super.setResponseHeader(exchange, message, header, value)) {
+		if (!super.setResponseHeader(exchange, message, header, value) && message.getEntity() != null) {
 			// other custom stuff like set-cookie...
-			if (message.getEntity() != null) {
-				if (header.equalsIgnoreCase(HeaderConstants.HEADER_SET_COOKIE)) {
-					final Series<CookieSetting> series = convertToSeries(value);
-					message.setCookieSettings(series);
-					return true;
+			if (header.equalsIgnoreCase(HeaderConstants.HEADER_SET_COOKIE)) {
+				final Series<CookieSetting> series = convertToSeries(value);
+				message.setCookieSettings(series);
+				return true;
+			}
+			if (header.equalsIgnoreCase(HeaderConstants.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
+				final Boolean bool = exchange.getContext().getTypeConverter().tryConvertTo(Boolean.class, value);
+				if (bool != null) {
+					message.setAccessControlAllowCredentials(bool);
 				}
-				if (header.equalsIgnoreCase(HeaderConstants.HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS)) {
-					final Boolean bool = exchange.getContext().getTypeConverter().tryConvertTo(Boolean.class, value);
-					if (bool != null) {
-						message.setAccessControlAllowCredentials(bool);
-					}
-					return true;
-				}
-				if (header.equalsIgnoreCase(HeaderConstants.HEADER_ACCESS_CONTROL_ALLOW_METHODS)) {
-					final Set<Method> set = convertToMethodSet(value, exchange.getContext().getTypeConverter());
-					message.setAccessControlAllowMethods(set);
-					return true;
-
-				}
+				return true;
+			}
+			if (header.equalsIgnoreCase(HeaderConstants.HEADER_ACCESS_CONTROL_ALLOW_METHODS)) {
+				final Set<Method> set = convertToMethodSet(value, exchange.getContext().getTypeConverter());
+				message.setAccessControlAllowMethods(set);
+				return true;
 			}
 		}
 
@@ -74,7 +87,7 @@ public class CustomRestletBinding extends DefaultRestletBinding {
 			return (Set<Method>) value;
 		}
 		final Set<Method> set = new LinkedHashSet<>();
-		final Iterator it = ObjectHelper.createIterator(value);
+		final Iterator<Object> it = ObjectHelper.createIterator(value);
 		while (it.hasNext()) {
 			final Object next = it.next();
 			final String text = typeConverter.tryConvertTo(String.class, next);

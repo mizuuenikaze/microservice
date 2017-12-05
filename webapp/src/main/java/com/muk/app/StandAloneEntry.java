@@ -149,9 +149,7 @@ public class StandAloneEntry {
 
 			jettyServer.setHandler(contextHandler);
 
-			try
-
-			{
+			try {
 				jettyServer.start();
 				LOG.info("Jetty started on port: " + getHttpPort());
 				jettyServer.join();

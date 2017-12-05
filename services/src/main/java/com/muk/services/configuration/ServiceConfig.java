@@ -66,10 +66,10 @@ import com.muk.ext.security.impl.DefaultNonceService;
 import com.muk.services.api.BarcodeService;
 import com.muk.services.api.BlogService;
 import com.muk.services.api.CachingOauthUserDetailsService;
-import com.muk.services.api.CmsService;
 import com.muk.services.api.ConfigurationService;
 import com.muk.services.api.CryptoService;
 import com.muk.services.api.CsvImportService;
+import com.muk.services.api.DocService;
 import com.muk.services.api.PaymentService;
 import com.muk.services.api.ProjectConfigurator;
 import com.muk.services.api.QueueDemultiplexer;
@@ -345,7 +345,7 @@ public class ServiceConfig {
 	}
 
 	@Bean
-	public CmsService cmsService() {
+	public DocService docService() {
 		return new CouchDbCmsService();
 	}
 

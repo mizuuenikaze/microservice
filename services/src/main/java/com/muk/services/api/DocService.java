@@ -20,6 +20,10 @@ import java.util.Map;
 
 import net.thisptr.jackson.jq.JsonQuery;
 
-public interface CmsService {
+public interface DocService {
 	Map<String, Object> fetchDocById(String db, String docId, JsonQuery jq);
+
+	Map<String, Object> addDoc(String db, Object doc);
+
+	Map<String, Object> updateDoc(String db, String docId, Object doc);
 }

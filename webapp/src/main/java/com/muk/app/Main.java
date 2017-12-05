@@ -31,13 +31,11 @@ public class Main extends MainSupport {
 
 	@Override
 	protected ProducerTemplate findOrCreateCamelTemplate() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	protected Map<String, CamelContext> getCamelContextMap() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

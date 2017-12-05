@@ -20,32 +20,59 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_NULL)
-public class BlogEntrySummary {
-	private String id;
-	private Long key;
-	private String value;
+public class AppointmentRequest {
+	private String who;
+	private String what;
+	private Long when;
+	private String where;
+	private String how;
+	private String why;
 
-	public String getId() {
-		return id;
+	public String getWho() {
+		return who;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setWho(String who) {
+		this.who = who;
 	}
 
-	public Long getKey() {
-		return key;
+	public String getWhat() {
+		return what;
 	}
 
-	public void setKey(Long key) {
-		this.key = key;
+	public void setWhat(String what) {
+		this.what = what;
 	}
 
-	public String getValue() {
-		return value;
+	public Long getWhen() {
+		return when;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
+	public void setWhen(Long when) {
+		this.when = when;
+	}
+
+	public String getWhere() {
+		return where;
+	}
+
+	public void setWhere(String where) {
+		this.where = where;
+	}
+
+	public String getHow() {
+		return how;
+	}
+
+	public void setHow(String how) {
+		this.how = how;
+	}
+
+	public String getWhy() {
+		return why;
+	}
+
+	public void setWhy(String why) {
+		this.why = why;
 	}
 }

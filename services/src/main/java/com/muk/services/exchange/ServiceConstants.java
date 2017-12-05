@@ -59,4 +59,10 @@ public interface ServiceConstants {
 		public static final String paypalExpress = "paypal-express";
 		public static final String stripe = "stripe";
 	}
+
+	interface SimpleStates {
+		public static final Integer pending = 0;
+		public static final Integer success = 1;
+		public static final Integer error = 2;
+	}
 }

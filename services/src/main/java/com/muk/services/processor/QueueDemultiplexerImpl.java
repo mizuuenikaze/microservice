@@ -24,18 +24,16 @@ import com.muk.services.exchange.ServiceConstants;
 
 /**
  *
- * Determines the activemq queue to route too. Puts the event id in the header
- * for idempotent consumer.
+ * Determines the activemq queue to route to. Puts the event id in the header for idempotent consumer.
  *
  */
 public class QueueDemultiplexerImpl extends AbstractQueueDemultiplexer {
 	private static final Logger LOG = LoggerFactory.getLogger(QueueDemultiplexerImpl.class);
 
-
 	@Override
 	protected String determineEventDestination(String[] eventParts, ExtendedEvent event) {
 		String destination = "unknown";
-		final long lastNotificationTime = 0l;
+		//final long lastNotificationTime = 0l;
 
 		switch (eventParts[0]) {
 		case ServiceConstants.Codes.eventCatOrder:
@@ -48,7 +46,6 @@ public class QueueDemultiplexerImpl extends AbstractQueueDemultiplexer {
 		default:
 			destination = "unknown";
 		}
-
 
 		return destination;
 	}

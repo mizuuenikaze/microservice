@@ -24,9 +24,15 @@ import org.apache.camel.util.LRUCache;
 
 import com.muk.ext.core.ProjectCoreVersion;
 
+/**
+ * A least recently used cached with time to live expiration.
+ */
 public class ExpiringLRUCache<K, V> extends LRUCache<K, ExpiringCacheValue<V>> {
 	private static final long serialVersionUID = ProjectCoreVersion.SERIAL_VERSION_UID;
 
+	/**
+	 * Expiration in milliseconds.
+	 */
 	private Long expiration;
 
 	public ExpiringLRUCache(int maximumCacheSize, long timeToLive) {
@@ -62,7 +68,7 @@ public class ExpiringLRUCache<K, V> extends LRUCache<K, ExpiringCacheValue<V>> {
 	}
 
 	private void evictExpiredValues() {
-		// remove expired entries
+		// remove expired entries based on ttl
 		final List<K> removeList = new ArrayList<K>();
 
 		final Iterator<Entry<K, ExpiringCacheValue<V>>> iterator = entrySet().iterator();

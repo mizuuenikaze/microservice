@@ -602,7 +602,7 @@ uninstall-am: uninstall-jettyDATA
 
 
 epack:
-	./gradlew epack --no-daemon --gradle-user-home="WORKDIR" -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	./gradlew epack --no-daemon --gradle-user-home="WORKDIR" -Penv=$(CONF_ENV) -Pv=$(VERSION) && touch epack
 
 build:
 	./gradlew build -x test -x integrationtest -Penv=$(CONF_ENV) -Pv=$(VERSION)
@@ -631,7 +631,7 @@ install-exec-local:
 @DEBUG_TRUE@all-local: build
 @DEBUG_FALSE@all-local: epack
 
-.PHONY: build eclipse properties epack appRun appDebug
+.PHONY: build eclipse properties appRun appDebug
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

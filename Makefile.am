@@ -4,7 +4,7 @@
 
 
 epack:
-	./gradlew epack --no-daemon --gradle-user-home="WORKDIR" -Penv=$(CONF_ENV) -Pv=$(VERSION)
+	./gradlew epack --no-daemon --gradle-user-home="WORKDIR" -Penv=$(CONF_ENV) -Pv=$(VERSION) && touch epack
 
 build:
 	./gradlew build -x test -x integrationtest -Penv=$(CONF_ENV) -Pv=$(VERSION)
@@ -42,4 +42,4 @@ jettydir = /usr/local/share/jetty-9
 jetty_DATA = $(wildcard webapp/build/appLibs/*.jar)
 endif
 
-.PHONY: build eclipse properties epack appRun appDebug
+.PHONY: build eclipse properties appRun appDebug
