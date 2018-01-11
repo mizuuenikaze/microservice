@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  *******************************************************************************/
 package com.muk.ext.core.json.model;
 
+import java.time.OffsetDateTime;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -23,7 +25,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class AppointmentRequest {
 	private String who;
 	private String what;
-	private Long when;
+	private OffsetDateTime start;
+	private OffsetDateTime end;
 	private String where;
 	private String how;
 	private String why;
@@ -42,14 +45,6 @@ public class AppointmentRequest {
 
 	public void setWhat(String what) {
 		this.what = what;
-	}
-
-	public Long getWhen() {
-		return when;
-	}
-
-	public void setWhen(Long when) {
-		this.when = when;
 	}
 
 	public String getWhere() {
@@ -74,5 +69,21 @@ public class AppointmentRequest {
 
 	public void setWhy(String why) {
 		this.why = why;
+	}
+
+	public OffsetDateTime getStart() {
+		return start;
+	}
+
+	public void setStart(OffsetDateTime start) {
+		this.start = start;
+	}
+
+	public OffsetDateTime getEnd() {
+		return end;
+	}
+
+	public void setEnd(OffsetDateTime end) {
+		this.end = end;
 	}
 }

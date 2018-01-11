@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -55,8 +55,9 @@ public class BlogApiProcessor extends AbstractResourceProcessor<Object, BlogSlic
 
 		cmsResponse = blogService.fetchPagedSummaryView(params.getFirst("mode"),
 				params.getFirst("startkey") != null ? Long.parseLong(params.getFirst("startkey")) : null,
-				params.getFirst("startkeyDocId"),
+				params.getFirst("startkey_docid"),
 				params.getFirst("limit") != null ? Long.parseLong(params.getFirst("limit")) : null,
+				5 /* arbitrary page limit */,
 				params.getFirst("offset") != null ? Long.parseLong(params.getFirst("offset")) : null);
 
 		return cmsResponse;

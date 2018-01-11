@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -27,10 +27,10 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.http.common.HttpMethods;
 import org.restlet.data.Status;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -115,13 +115,13 @@ public class OauthLoginProcessor extends AbstractRestProcessor<OauthLoginRequest
 					final List<HateoasLink> links = new ArrayList<HateoasLink>();
 					HateoasLink link = new HateoasLink();
 					link.setRel("confirm");
-					link.setMethod(HttpMethod.GET.name());
+					link.setMethod(HttpMethods.GET.name());
 					link.setHref(hrefConfirmBuilder.build().toUriString());
 					links.add(link);
 
 					link = new HateoasLink();
 					link.setRel("deny");
-					link.setMethod(HttpMethod.GET.name());
+					link.setMethod(HttpMethods.GET.name());
 					link.setHref(hrefDenyBuilder.build().toUriString());
 					links.add(link);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  *******************************************************************************/
 package com.muk.services.api.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,8 +31,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -55,8 +54,8 @@ public class CouchDbCmsService implements DocService {
 	@Override
 	public Map<String, Object> fetchDocById(String db, String docId, JsonQuery jq) {
 		final Map<String, Object> response = new HashMap<String, Object>();
-		final MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
 
 		final HttpEntity<Object> request = new HttpEntity<Object>(headers);
 		final ResponseEntity<JsonNode> couchResponse = restTemplate.exchange(
@@ -76,8 +75,9 @@ public class CouchDbCmsService implements DocService {
 	@Override
 	public Map<String, Object> addDoc(String db, Object doc) {
 		final Map<String, Object> response = new HashMap<String, Object>();
-		final MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		final HttpEntity<Object> request = new HttpEntity<Object>(doc, headers);
 		final ResponseEntity<JsonNode> couchResponse = restTemplate
@@ -91,8 +91,9 @@ public class CouchDbCmsService implements DocService {
 	@Override
 	public Map<String, Object> updateDoc(String db, String docId, Object doc) {
 		final Map<String, Object> response = new HashMap<String, Object>();
-		final MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>();
-		headers.add(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+		headers.setContentType(MediaType.APPLICATION_JSON);
 
 		final HttpEntity<Object> request = new HttpEntity<Object>(doc, headers);
 		final ResponseEntity<JsonNode> couchResponse = restTemplate.exchange(

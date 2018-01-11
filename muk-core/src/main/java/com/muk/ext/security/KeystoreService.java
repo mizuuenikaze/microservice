@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ package com.muk.ext.security;
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
@@ -28,6 +29,9 @@ import java.security.spec.InvalidKeySpecException;
  *
  */
 public interface KeystoreService {
+	PrivateKey getPrivateKey(String alias) throws KeyStoreException, CertificateException, InvalidKeySpecException,
+			NoSuchAlgorithmException, UnrecoverableEntryException, IOException;
+
 	String getPBEKey(String alias) throws KeyStoreException, CertificateException, NoSuchAlgorithmException,
 			UnrecoverableEntryException, InvalidKeySpecException, IOException;
 

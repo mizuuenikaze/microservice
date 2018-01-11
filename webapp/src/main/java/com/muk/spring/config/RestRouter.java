@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
 
 import com.muk.ext.core.json.RestReply;
+import com.muk.ext.core.json.model.ActionDoc;
 import com.muk.ext.core.json.model.AppointmentRequest;
 import com.muk.ext.core.json.model.AppointmentResponse;
 import com.muk.ext.core.json.model.BlogDoc;
@@ -46,6 +47,7 @@ import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
 import com.muk.services.processor.api.PaymentApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
+import com.muk.services.processor.api.TaskApiProcessor;
 
 /**
  *
@@ -110,12 +112,15 @@ public class RestRouter extends SpringRouteBuilder {
 
 		/**
 		 * A post that is asynchronous uses a pattern of setting a unmarshal type header and a generic destination to go
-		 * from activeMQ to couchDB and processing. To continue http method handling, used endRest().
+		 * from activeMQ to couchDB and processing. To continue http method handling, use endRest().
 		 */
 		rest(RestConstants.Rest.apiPath + "/appointments").post().type(AppointmentRequest.class)
 				.outType(AppointmentResponse.class).consumes(jsonMediaType).produces(jsonMediaType).route()
 				.setHeader(JacksonConstants.UNMARSHAL_TYPE, constant(AppointmentRequest.class.getName()))
 				.to("direct:appointment");
+
+		rest(RestConstants.Rest.apiPath).get("/action/tasks/{docId}").outType(ActionDoc.class).consumes(jsonMediaType)
+				.produces(jsonMediaType).to("direct:task");
 
 		// direct rest routes
 
@@ -141,5 +146,7 @@ public class RestRouter extends SpringRouteBuilder {
 				.process(lookup(BlogApiProcessor.class)).bean("statusHandler", "logRestStatus");
 		from("direct:blogEntries").process(lookup(BlogDocApiProcessor.class)).bean("statusHandler", "logRestStatus");
 		from("direct:appointment").process("authPrincipalProcessor").policy("restUserPolicy").to("direct:asyncRequest");
+		from("direct:task").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(TaskApiProcessor.class)).bean("statusHandler", "logRestStatus");
 	}
 }

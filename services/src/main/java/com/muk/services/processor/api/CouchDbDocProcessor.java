@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -53,8 +53,10 @@ public abstract class CouchDbDocProcessor<DOCIN, DOCOUT> extends AbstractResourc
 				jq = JsonQuery.compile("{id: ._id, page: .sections}");
 				break;
 			case "blog":
-				jq = JsonQuery.compile(
-						"{id: ._id, timestamp: .timestamp, title: .title, subtitle: .subtitle, keywords: .keywords, body: .body}");
+				jq = JsonQuery.compile("{id: ._id, timestamp, title, subtitle, keywords, hasHtml, body, image}");
+				break;
+			case "action":
+				jq = JsonQuery.compile("{id: ._id, status, message}");
 				break;
 			default:
 				jq = JsonQuery.compile(".");

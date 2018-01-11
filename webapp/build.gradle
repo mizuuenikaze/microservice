@@ -16,11 +16,6 @@ apply plugin: 'distribution'
 apply plugin: 'war'
 
 archivesBaseName  = 'muk-microservices'
-ext.fullRepoUrl = "$config.binaryRepository.url/$config.binaryRepository.name"
-
-repositories {
-	maven { url fullRepoUrl }
-}
 
 sourceSets {
 	integrationTest {

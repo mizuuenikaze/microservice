@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -18,12 +18,13 @@ package com.muk.ext.core.json.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.JsonNode;
 
 @JsonInclude(Include.NON_NULL)
 public class BlogEntrySummary {
 	private String id;
 	private Long key;
-	private String value;
+	private JsonNode value;
 
 	public String getId() {
 		return id;
@@ -41,11 +42,11 @@ public class BlogEntrySummary {
 		this.key = key;
 	}
 
-	public String getValue() {
+	public JsonNode getValue() {
 		return value;
 	}
 
-	public void setValue(String value) {
+	public void setValue(JsonNode value) {
 		this.value = value;
 	}
 }

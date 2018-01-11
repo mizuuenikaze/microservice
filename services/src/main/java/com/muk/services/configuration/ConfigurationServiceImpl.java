@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,9 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 	private String stripeUri;
 	private String couchDbUri;
 	private String salt;
+	private String calendarAccount;
+	private String calendarAlias;
+	private String primaryEmail;
 
 	@Override
 	public String getNearRealTimeInterval() {
@@ -164,5 +167,32 @@ public class ConfigurationServiceImpl implements ProjectConfigurator {
 
 	public void setCouchDbUri(String couchDbUri) {
 		this.couchDbUri = couchDbUri;
+	}
+
+	@Override
+	public String getCalendarAccount() {
+		return calendarAccount;
+	}
+
+	public void setCalendarAccount(String calendarAccount) {
+		this.calendarAccount = calendarAccount;
+	}
+
+	@Override
+	public String getCalendarAlias() {
+		return calendarAlias;
+	}
+
+	public void setCalendarAlias(String calendarAlias) {
+		this.calendarAlias = calendarAlias;
+	}
+
+	@Override
+	public String getPrimaryEmail() {
+		return primaryEmail;
+	}
+
+	public void setPrimaryEmail(String primaryEmail) {
+		this.primaryEmail = primaryEmail;
 	}
 }

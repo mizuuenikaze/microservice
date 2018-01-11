@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -55,6 +55,12 @@ public class CachingConfig extends CachingConfigurerSupport {
 				.withExpiry(Expirations.timeToLiveExpiration(Duration.of(5, TimeUnit.MINUTES))).build();
 		cacheManager.createCache(ServiceConstants.CacheNames.paymentApiTokenCache,
 				Eh107Configuration.fromEhcacheCacheConfiguration(tokenCacheConfiguration));
+
+		final CacheConfiguration<Object, Object> externalTokenCacheConfiguration = CacheConfigurationBuilder
+				.newCacheConfigurationBuilder(Object.class, Object.class, ResourcePoolsBuilder.heap(3))
+				.withExpiry(Expirations.timeToLiveExpiration(Duration.of(50, TimeUnit.MINUTES))).build();
+		cacheManager.createCache(ServiceConstants.CacheNames.externalTokenCache,
+				Eh107Configuration.fromEhcacheCacheConfiguration(externalTokenCacheConfiguration));
 
 		return cacheManager;
 	}

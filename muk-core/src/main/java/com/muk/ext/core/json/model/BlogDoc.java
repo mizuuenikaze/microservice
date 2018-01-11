@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -28,7 +28,9 @@ public class BlogDoc extends RestReply {
 	private String title;
 	private String subtitle;
 	private String timestamp;
+	private Boolean hasHtml;
 	private JsonNode body;
+	private BlogPicture image;
 
 	public String getId() {
 		return id;
@@ -76,5 +78,21 @@ public class BlogDoc extends RestReply {
 
 	public void setBody(JsonNode body) {
 		this.body = body;
+	}
+
+	public Boolean getHasHtml() {
+		return hasHtml;
+	}
+
+	public void setHasHtml(Boolean hasHtml) {
+		this.hasHtml = hasHtml;
+	}
+
+	public BlogPicture getImage() {
+		return image;
+	}
+
+	public void setImage(BlogPicture image) {
+		this.image = image;
 	}
 }

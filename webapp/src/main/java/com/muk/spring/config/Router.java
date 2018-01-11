@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -62,6 +62,7 @@ public class Router extends SpringRouteBuilder {
 		jacksonJMSFormats.put("asyncRequest", new JacksonDataFormat());
 		jacksonJMSFormats.get("asyncRequest")
 				.setModuleClassNames("com.fasterxml.jackson.datatype.jsr310.JavaTimeModule");
+		jacksonJMSFormats.get("asyncRequest").setAllowUnmarshallType(true);
 
 		// notification handling
 		from("direct:intent").bean("queueDemux", "routeToQueue")
@@ -86,11 +87,10 @@ public class Router extends SpringRouteBuilder {
 
 		// async requests
 		from("direct:asyncRequest").marshal(jacksonJMSFormats.get("asyncRequest"))
-				.bean("actionApiFacade", "hashRequest")
+				.bean("actionApiFacade", "setupProperties")
 				.idempotentConsumer(header(CamelRouteConstants.MessageHeaders.actionId),
 						ExpiringIdempotentRepository.expiringIdempotentRepository(100, 30000l))
-				.to(ExchangePattern.InOnly, "activemq:queue:actions?exchangePattern=InOnly")
-				.process(lookup(AppointmentApiProcessor.class));
+				.to("activemq:queue:actions?exchangePattern=InOnly").process(lookup(AppointmentApiProcessor.class));
 
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppInstalled + "?asyncConsumer=false")
 				.unmarshal(jacksonJMSFormats.get("mukEvent"))

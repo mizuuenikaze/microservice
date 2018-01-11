@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright (C)  2018  mizuuenikaze inc
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *******************************************************************************/
 package com.muk.services.facades.impl;
 
 import java.security.NoSuchAlgorithmException;
@@ -48,7 +64,7 @@ public class DefaultActionApiFacade implements ActionApiFacade {
 	private Component processorEndpointComponent;
 
 	@Override
-	public void hashRequest(Exchange exchange) throws CamelException {
+	public void setupProperties(Exchange exchange) throws CamelException {
 		final StringBuilder sb = new StringBuilder();
 		sb.append(exchange.getIn().getHeader(RestletConstants.RESTLET_REQUEST, Request.class).getClientInfo()
 				.getAddress()).append(exchange.getIn().getBody(String.class));
@@ -56,6 +72,8 @@ public class DefaultActionApiFacade implements ActionApiFacade {
 		try {
 			exchange.getIn().setHeader(CamelRouteConstants.MessageHeaders.actionId,
 					nonceService.generateHash(sb.toString()));
+			exchange.getIn().setHeader(CamelRouteConstants.MessageHeaders.camelUUid,
+					exchange.getContext().getUuidGenerator().generateUuid());
 		} catch (final NoSuchAlgorithmException algEx) {
 			throw new CamelExchangeException("Failed to hash request.", exchange, algEx);
 		}
@@ -64,9 +82,10 @@ public class DefaultActionApiFacade implements ActionApiFacade {
 	@Override
 	public void loadAction(Exchange exchange) throws CamelException {
 		final ActionDoc doc = new ActionDoc();
-		doc.setId(exchange.getIn().getMessageId());
+		doc.setId(exchange.getIn().getHeader(CamelRouteConstants.MessageHeaders.camelUUid, String.class));
 		doc.setPayload(exchange.getIn().getBody());
 		doc.setStatus(ServiceConstants.SimpleStates.pending);
+		doc.setTimestamp(String.valueOf(System.currentTimeMillis()));
 
 		Map<String, Object> docResponse = null;
 

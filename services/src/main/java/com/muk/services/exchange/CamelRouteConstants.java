@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ public interface CamelRouteConstants {
 
 	interface MessageHeaders {
 		public static final String actionId = "mukApiActionId";
+		public static final String camelUUid = "CamelCouchDBUUid";
 		public static final String mukEventId = "MukEventId";
 		public static final String queueDestination = "CamelJmsDestination";
 	}

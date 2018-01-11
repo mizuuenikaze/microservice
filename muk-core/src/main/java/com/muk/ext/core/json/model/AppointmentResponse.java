@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ import com.muk.ext.core.json.RestHateoasReply;
 
 @JsonInclude(Include.NON_NULL)
 public class AppointmentResponse extends RestHateoasReply {
+	private String id;
 	private Integer status;
 
 	public Integer getStatus() {
@@ -30,5 +31,13 @@ public class AppointmentResponse extends RestHateoasReply {
 
 	public void setStatus(Integer status) {
 		this.status = status;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }
