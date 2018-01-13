@@ -46,7 +46,7 @@
 	</appender>
 
 	<logger name="com.muk">
-		<level value="DEBUG" />
+		<level value="ERROR" />
 	</logger>
 	
 	<logger name="com.muk.spring.config.Router" additivity="false">
