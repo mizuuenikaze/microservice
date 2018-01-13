@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.web.util.UriComponents;
 
@@ -62,7 +63,10 @@ public class DefaultPaymentFacade implements PaymentFacade {
 			payload.put("currency", "usd");
 			payload.put("description", paymentRequest.getService());
 			payload.put("source", paymentRequest.getInfo());
-			payload.put("receipt_email", paymentRequest.getEmail());
+
+			if (StringUtils.isNotBlank(paymentRequest.getEmail())) {
+				payload.put("receipt_email", paymentRequest.getEmail());
+			}
 
 			if (paymentRequest.getMetadata() != null) {
 				final ObjectNode mds = payload.putObject("metadata");

@@ -22,9 +22,8 @@ import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
 
-import org.apache.camel.swagger.servlet.RestSwaggerServlet;
+import org.apache.camel.spi.RestConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.Order;
@@ -40,24 +39,27 @@ public class SwaggerWebApplicationInitializer implements WebApplicationInitializ
 
 	@Override
 	public void onStartup(ServletContext servletContext) throws ServletException {
-		LOG.info("Starting swagger servlet...");
-		final ServletRegistration.Dynamic swaggerDispatcher = servletContext.addServlet("SwaggerServlet",
-				RestSwaggerServlet.class);
-		swaggerDispatcher.addMapping("/api-doc/*");
-		swaggerDispatcher.setInitParameter("base.path", "api");
-		swaggerDispatcher.setInitParameter("api.path", "api-doc");
-		swaggerDispatcher.setInitParameter("api.version", "0.1");
-		swaggerDispatcher.setInitParameter("api.title", "Api Docs");
-		swaggerDispatcher.setInitParameter("api.description", "Rest Services via Camel");
-		swaggerDispatcher.setInitParameter("apiContextIdListing", "true");
+		LOG.info("Starting swagger cors filter...");
 
-		final FilterRegistration.Dynamic filterRegistration = servletContext.addFilter("RestSwaggerCorsFilter",
+		/*
+		 * Api set of cors headers is only for development to tie clients and api to the same domain in production.
+		 * Api-doc is open to all clients.
+		 */
+
+		final FilterRegistration.Dynamic coreFilterRegistration = servletContext.addFilter("RestCorsFilter",
+				"com.muk.servlet.RestApiCorsFilter");
+
+		final FilterRegistration.Dynamic swaggerFilterRegistration = servletContext.addFilter("RestSwaggerCorsFilter",
 				"org.apache.camel.swagger.servlet.RestSwaggerCorsFilter");
 
 		// Modify the cors headers
-		// filterRegistration.setInitParameter(name, value)
+		coreFilterRegistration.setInitParameter("Access-Control-Allow-Origin", "http://localhost:3000");
+		coreFilterRegistration.setInitParameter("Access-Control-Allow-Credentials", "true");
+		coreFilterRegistration.setInitParameter("Access-Control-Allow-Headers",
+				RestConfiguration.CORS_ACCESS_CONTROL_ALLOW_HEADERS + ", Authorization");
 
-		filterRegistration.addMappingForServletNames(EnumSet.of(DispatcherType.REQUEST), true, "SwaggerServlet");
+		coreFilterRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/api/*");
+		swaggerFilterRegistration.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/api-docs/*");
 
 	}
 }

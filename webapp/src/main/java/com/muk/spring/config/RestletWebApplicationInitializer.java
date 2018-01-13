@@ -47,9 +47,9 @@ public class RestletWebApplicationInitializer extends AbstractContextLoaderIniti
 
 		final ServletRegistration.Dynamic restletDispatcher = servletContext.addServlet("RestletServlet",
 				SpringServerServlet.class);
-		restletDispatcher.addMapping("/api/*");
+		restletDispatcher.addMapping("/*");
 		restletDispatcher.setInitParameter("org.restlet.component", "RestletComponent");
-		restletDispatcher.setAsyncSupported(true);
+		restletDispatcher.setAsyncSupported(false);
 	}
 
 	@Override

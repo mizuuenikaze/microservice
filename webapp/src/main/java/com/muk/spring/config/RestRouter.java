@@ -19,7 +19,6 @@ package com.muk.spring.config;
 import org.apache.camel.CamelAuthorizationException;
 import org.apache.camel.component.jackson.JacksonConstants;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.apache.camel.spi.RestConfiguration;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
 
@@ -67,17 +66,16 @@ public class RestRouter extends SpringRouteBuilder {
 
 		final String jsonMediaType = MediaType.APPLICATION_JSON.getName();
 
-		// Rest config with cors support only for development
+		// Rest config
 		restConfiguration().component("restlet").bindingMode(RestBindingMode.json).skipBindingOnErrorCode(false)
 				.dataFormatProperty("json.in.moduleClassNames",
 						"com.fasterxml.jackson.datatype.jsr310.JavaTimeModule, com.muk.ext.core.jackson.PairModule")
 				.dataFormatProperty("json.out.moduleClassNames",
 						"com.fasterxml.jackson.datatype.jsr310.JavaTimeModule, com.muk.ext.core.jackson.PairModule")
-				.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(true)
-				.corsAllowCredentials(true).corsHeaderProperty("Access-Control-Allow-Origin", "http://localhost:3000")
-				.corsHeaderProperty("Access-Control-Allow-Headers",
-						RestConfiguration.CORS_ACCESS_CONTROL_ALLOW_HEADERS + ", Authorization")
-				.endpointProperty("restletBinding", "#customRestletBinding");
+				.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").contextPath("/")
+				.endpointProperty("restletBinding", "#customRestletBinding").apiComponent("swagger")
+				.apiContextPath("api-doc").apiProperty("api.version", "0.5").apiProperty("api.title", "Client Api Docs")
+				.apiProperty("description", "Rest Services Via Camel");
 
 		// notification endpoint
 		rest(RestConstants.Rest.apiPath).post("/intents").bindingMode(RestBindingMode.off).consumes(jsonMediaType)

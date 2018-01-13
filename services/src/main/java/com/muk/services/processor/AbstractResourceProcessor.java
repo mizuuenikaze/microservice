@@ -23,6 +23,8 @@ import javax.inject.Inject;
 
 import org.apache.camel.Exchange;
 import org.restlet.data.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -33,6 +35,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public abstract class AbstractResourceProcessor<BodyType, ReturnType>
 		extends AbstractRestProcessor<BodyType, ReturnType> {
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractResourceProcessor.class);
+
 	@Inject
 	private ObjectMapper jsonObjectMapper;
 
@@ -85,6 +89,10 @@ public abstract class AbstractResourceProcessor<BodyType, ReturnType>
 		} catch (final HttpClientErrorException httpClientEx) {
 			exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, httpClientEx.getStatusCode().value());
 			exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_TEXT, httpClientEx.getMessage());
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(httpClientEx.getResponseBodyAsString());
+			}
 		}
 
 		return response;
