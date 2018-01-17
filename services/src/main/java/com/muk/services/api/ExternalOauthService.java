@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -14,12 +14,10 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.muk.services.strategy;
+package com.muk.services.api;
 
-import java.math.BigDecimal;
+public interface ExternalOauthService {
+	static final String SCOPE_CALENDAR = "https://www.googleapis.com/auth/calendar";
 
-public interface GiftCardBalanceStrategy {
-	BigDecimal parseValue(String value);
-
-	BigDecimal parseValue(Double value);
+	String authorizeRequest(String scope, String privateKeyAlias, String serviceAccount);
 }

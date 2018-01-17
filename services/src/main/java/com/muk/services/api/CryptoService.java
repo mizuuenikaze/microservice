@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  *******************************************************************************/
 package com.muk.services.api;
 
+import java.security.PrivateKey;
+
 public interface CryptoService {
 	String encode(byte[] byteArray);
 
@@ -26,4 +28,6 @@ public interface CryptoService {
 	String encrypt(String value);
 
 	String decrypt(String value);
+
+	String signature(String algorithm, String payload, PrivateKey privateKey);
 }

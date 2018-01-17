@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -47,9 +47,9 @@ public class RestletWebApplicationInitializer extends AbstractContextLoaderIniti
 
 		final ServletRegistration.Dynamic restletDispatcher = servletContext.addServlet("RestletServlet",
 				SpringServerServlet.class);
-		restletDispatcher.addMapping("/api/*");
+		restletDispatcher.addMapping("/*");
 		restletDispatcher.setInitParameter("org.restlet.component", "RestletComponent");
-		restletDispatcher.setAsyncSupported(true);
+		restletDispatcher.setAsyncSupported(false);
 	}
 
 	@Override

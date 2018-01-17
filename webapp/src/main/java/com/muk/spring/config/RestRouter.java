@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -17,12 +17,15 @@
 package com.muk.spring.config;
 
 import org.apache.camel.CamelAuthorizationException;
+import org.apache.camel.component.jackson.JacksonConstants;
 import org.apache.camel.model.rest.RestBindingMode;
-import org.apache.camel.spi.RestConfiguration;
 import org.apache.camel.spring.SpringRouteBuilder;
 import org.restlet.data.MediaType;
 
 import com.muk.ext.core.json.RestReply;
+import com.muk.ext.core.json.model.ActionDoc;
+import com.muk.ext.core.json.model.AppointmentRequest;
+import com.muk.ext.core.json.model.AppointmentResponse;
 import com.muk.ext.core.json.model.BlogDoc;
 import com.muk.ext.core.json.model.BlogSliceSummary;
 import com.muk.ext.core.json.model.CmsDoc;
@@ -43,6 +46,7 @@ import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
 import com.muk.services.processor.api.PaymentApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
+import com.muk.services.processor.api.TaskApiProcessor;
 
 /**
  *
@@ -62,17 +66,16 @@ public class RestRouter extends SpringRouteBuilder {
 
 		final String jsonMediaType = MediaType.APPLICATION_JSON.getName();
 
-		// Rest config with cors support only for development
+		// Rest config
 		restConfiguration().component("restlet").bindingMode(RestBindingMode.json).skipBindingOnErrorCode(false)
 				.dataFormatProperty("json.in.moduleClassNames",
 						"com.fasterxml.jackson.datatype.jsr310.JavaTimeModule, com.muk.ext.core.jackson.PairModule")
 				.dataFormatProperty("json.out.moduleClassNames",
 						"com.fasterxml.jackson.datatype.jsr310.JavaTimeModule, com.muk.ext.core.jackson.PairModule")
-				.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").enableCORS(true)
-				.corsAllowCredentials(true).corsHeaderProperty("Access-Control-Allow-Origin", "http://localhost:3000")
-				.corsHeaderProperty("Access-Control-Allow-Headers",
-						RestConfiguration.CORS_ACCESS_CONTROL_ALLOW_HEADERS + ", Authorization")
-				.endpointProperty("restletBinding", "#customRestletBinding");
+				.dataFormatProperty("json.in.USE_BIG_DECIMAL_FOR_FLOATS", "true").contextPath("/")
+				.endpointProperty("restletBinding", "#customRestletBinding").apiComponent("swagger")
+				.apiContextPath("api-doc").apiProperty("api.version", "0.5").apiProperty("api.title", "Client Api Docs")
+				.apiProperty("description", "Rest Services Via Camel");
 
 		// notification endpoint
 		rest(RestConstants.Rest.apiPath).post("/intents").bindingMode(RestBindingMode.off).consumes(jsonMediaType)
@@ -105,6 +108,18 @@ public class RestRouter extends SpringRouteBuilder {
 		rest(RestConstants.Rest.apiPath).get("/blog/entries/{docId}").outType(BlogDoc.class).consumes(jsonMediaType)
 				.produces(jsonMediaType).to("direct:blogEntries");
 
+		/**
+		 * A post that is asynchronous uses a pattern of setting a unmarshal type header and a generic destination to go
+		 * from activeMQ to couchDB and processing. To continue http method handling, use endRest().
+		 */
+		rest(RestConstants.Rest.apiPath + "/appointments").post().type(AppointmentRequest.class)
+				.outType(AppointmentResponse.class).consumes(jsonMediaType).produces(jsonMediaType).route()
+				.setHeader(JacksonConstants.UNMARSHAL_TYPE, constant(AppointmentRequest.class.getName()))
+				.to("direct:appointment");
+
+		rest(RestConstants.Rest.apiPath).get("/action/tasks/{docId}").outType(ActionDoc.class).consumes(jsonMediaType)
+				.produces(jsonMediaType).to("direct:task");
+
 		// direct rest routes
 
 		// camel route management
@@ -128,5 +143,8 @@ public class RestRouter extends SpringRouteBuilder {
 		from("direct:blog").process("authPrincipalProcessor").policy("restUserPolicy")
 				.process(lookup(BlogApiProcessor.class)).bean("statusHandler", "logRestStatus");
 		from("direct:blogEntries").process(lookup(BlogDocApiProcessor.class)).bean("statusHandler", "logRestStatus");
+		from("direct:appointment").process("authPrincipalProcessor").policy("restUserPolicy").to("direct:asyncRequest");
+		from("direct:task").process("authPrincipalProcessor").policy("restUserPolicy")
+				.process(lookup(TaskApiProcessor.class)).bean("statusHandler", "logRestStatus");
 	}
 }

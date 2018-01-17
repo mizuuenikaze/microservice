@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ import com.muk.ext.csv.CsvRecord;
 import com.muk.services.api.ProjectConfigurator;
 import com.muk.services.api.model.ExtendedEvent;
 import com.muk.services.exchange.CamelRouteConstants;
-import com.muk.services.exchange.NotificationEvent;
 import com.muk.services.exchange.ServiceConstants;
+import com.muk.services.processor.api.AppointmentApiProcessor;
 
 /**
  *
@@ -59,11 +59,16 @@ public class Router extends SpringRouteBuilder {
 		jacksonJMSFormats.put("csvRecord", new JacksonDataFormat(CsvRecord.class));
 		jacksonJMSFormats.get("csvRecord").setAllowJmsType(true);
 
+		jacksonJMSFormats.put("asyncRequest", new JacksonDataFormat());
+		jacksonJMSFormats.get("asyncRequest")
+				.setModuleClassNames("com.fasterxml.jackson.datatype.jsr310.JavaTimeModule");
+		jacksonJMSFormats.get("asyncRequest").setAllowUnmarshallType(true);
+
 		// notification handling
 		from("direct:intent").bean("queueDemux", "routeToQueue")
-		.idempotentConsumer(header(NotificationEvent.Keys.mukEventId),
-				ExpiringIdempotentRepository.expiringIdempotentRepository(200, 20000l))
-		.marshal(jacksonJMSFormats.get("mukEvent")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
+				.idempotentConsumer(header(CamelRouteConstants.MessageHeaders.mukEventId),
+						ExpiringIdempotentRepository.expiringIdempotentRepository(200, 20000l))
+				.marshal(jacksonJMSFormats.get("mukEvent")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
 
 		from("activemq:queue:unknown?asyncConsumer=false").log(LoggingLevel.DEBUG,
 				org.slf4j.LoggerFactory.getLogger("com.muk.spring.config.Router"),
@@ -77,47 +82,58 @@ public class Router extends SpringRouteBuilder {
 
 		fromF("%s?maxMessagesPerPoll=%d&delay=%s&initialDelay=%s&moveFailed=.error&doneFileName=${file:name.noext}.done",
 				configurationService.getSftpTarget(), 1, "1m", "30s").routeId(CamelRouteConstants.RouteIds.csvFileParse)
-		.split(body().tokenize("\n")).streaming().unmarshal(csvFormat).bean("csvDemux", "routeToQueue")
-		.marshal(jacksonJMSFormats.get("csvRecord")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
+						.split(body().tokenize("\n")).streaming().unmarshal(csvFormat).bean("csvDemux", "routeToQueue")
+						.marshal(jacksonJMSFormats.get("csvRecord")).to(ExchangePattern.InOnly, "activemq:queue:dummy");
 
+		// async requests
+		from("direct:asyncRequest").marshal(jacksonJMSFormats.get("asyncRequest"))
+				.bean("actionApiFacade", "setupProperties")
+				.idempotentConsumer(header(CamelRouteConstants.MessageHeaders.actionId),
+						ExpiringIdempotentRepository.expiringIdempotentRepository(100, 30000l))
+				.to("activemq:queue:actions?exchangePattern=InOnly").process(lookup(AppointmentApiProcessor.class));
 
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppInstalled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mukEvent"))
-		.to("direct:" + ServiceConstants.QueueDestinations.queueAppInstalled);
+				.unmarshal(jacksonJMSFormats.get("mukEvent"))
+				.to("direct:" + ServiceConstants.QueueDestinations.queueAppInstalled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppUninstalled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mukEvent"))
-		.to("direct:" + ServiceConstants.QueueDestinations.queueAppUninstalled);
+				.unmarshal(jacksonJMSFormats.get("mukEvent"))
+				.to("direct:" + ServiceConstants.QueueDestinations.queueAppUninstalled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppEnabled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mukEvent"))
-		.to("direct:" + ServiceConstants.QueueDestinations.queueAppEnabled);
+				.unmarshal(jacksonJMSFormats.get("mukEvent"))
+				.to("direct:" + ServiceConstants.QueueDestinations.queueAppEnabled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppDisabled + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mukEvent"))
-		.to("direct:" + ServiceConstants.QueueDestinations.queueAppDisabled);
+				.unmarshal(jacksonJMSFormats.get("mukEvent"))
+				.to("direct:" + ServiceConstants.QueueDestinations.queueAppDisabled);
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueAppUpgraded + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("mukEvent"))
-		.to("direct:" + ServiceConstants.QueueDestinations.queueAppUpgraded);
+				.unmarshal(jacksonJMSFormats.get("mukEvent"))
+				.to("direct:" + ServiceConstants.QueueDestinations.queueAppUpgraded);
 
 		// data transformation
 		from("activemq:queue:" + ServiceConstants.QueueDestinations.queueCsvRow + "?asyncConsumer=false")
-		.unmarshal(jacksonJMSFormats.get("csvRecord"))
-		.to("direct:" + ServiceConstants.QueueDestinations.queueCsvRow);
+				.unmarshal(jacksonJMSFormats.get("csvRecord"))
+				.to("direct:" + ServiceConstants.QueueDestinations.queueCsvRow);
 
 		from("direct:" + ServiceConstants.QueueDestinations.queueAppInstalled).process("nopProcessor")
-		.bean("statusHandler", "logProcessStatus");
+				.bean("statusHandler", "logProcessStatus");
 		from("direct:" + ServiceConstants.QueueDestinations.queueAppUninstalled).process("nopProcessor")
-		.bean("statusHandler", "logProcessStatus");
+				.bean("statusHandler", "logProcessStatus");
 		from("direct:" + ServiceConstants.QueueDestinations.queueAppEnabled).process("nopProcessor")
-		.bean("statusHandler", "logProcessStatus");
+				.bean("statusHandler", "logProcessStatus");
 		from("direct:" + ServiceConstants.QueueDestinations.queueAppDisabled).process("nopProcessor")
-		.bean("statusHandler", "logProcessStatus");
+				.bean("statusHandler", "logProcessStatus");
 		from("direct:" + ServiceConstants.QueueDestinations.queueAppUpgraded).process("nopProcessor")
-		.bean("statusHandler", "logProcessStatus");
+				.bean("statusHandler", "logProcessStatus");
 
 		// data transformation
 		from("direct:" + ServiceConstants.QueueDestinations.queueCsvRow).process("dataTranslationProcessor")
-		.bean("statusHandler", "logProcessStatus").choice().when()
-		.simple("${body.status} == ${type:com.muk.ext.status.Status.ERROR}").transform()
-		.simple("${body.record}").marshal(csvFormat)
-		.toF("%s?fileName=processErrors.log&fileExist=Append", configurationService.getSftpTarget());
+				.bean("statusHandler", "logProcessStatus").choice().when()
+				.simple("${body.status} == ${type:com.muk.ext.status.Status.ERROR}").transform()
+				.simple("${body.record}").marshal(csvFormat)
+				.toF("%s?fileName=processErrors.log&fileExist=Append", configurationService.getSftpTarget());
+
+		// async requests
+		from("activemq:queue:actions?asyncConsumer=true&disableReplyTo=true")
+				.unmarshal(jacksonJMSFormats.get("asyncRequest")).bean("actionApiFacade", "loadAction")
+				.recipientList(method("actionApiFacade", "processAction")).bean("actionApiFacade", "finalizeAction");
 	}
 }

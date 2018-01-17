@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import java.nio.file.StandardOpenOption;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
@@ -44,8 +45,29 @@ public class DefaultKeystoreService implements KeystoreService {
 	private String keystorePass;
 
 	@Override
+	public PrivateKey getPrivateKey(String alias) throws KeyStoreException, CertificateException,
+			InvalidKeySpecException, NoSuchAlgorithmException, UnrecoverableEntryException, IOException {
+		final KeyStore ks = loadKeyStore();
+
+		final KeyStore.PrivateKeyEntry privateKeyEntry = extractKeyEntry(ks, alias, KeyStore.PrivateKeyEntry.class);
+
+		return privateKeyEntry.getPrivateKey();
+	}
+
+	@Override
 	public String getPBEKey(String alias) throws KeyStoreException, CertificateException, InvalidKeySpecException,
 			NoSuchAlgorithmException, UnrecoverableEntryException, IOException {
+
+		final KeyStore ks = loadKeyStore();
+
+		final SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+		final KeyStore.SecretKeyEntry secretKeyEntry = extractKeyEntry(ks, alias, KeyStore.SecretKeyEntry.class);
+		final PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(secretKeyEntry.getSecretKey(), PBEKeySpec.class);
+		return new String(keySpec.getPassword());
+	}
+
+	private KeyStore loadKeyStore()
+			throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
 		final KeyStore ks = KeyStore.getInstance("JCEKS");
 
 		InputStream ksIn = null;
@@ -59,15 +81,18 @@ public class DefaultKeystoreService implements KeystoreService {
 			}
 		}
 
+		return ks;
+	}
+
+	private <T extends KeyStore.Entry> T extractKeyEntry(KeyStore ks, String alias, Class<T> entryType)
+			throws KeyStoreException, UnrecoverableEntryException, NoSuchAlgorithmException, InvalidKeySpecException {
 		final KeyStore.PasswordProtection entryPassword = new KeyStore.PasswordProtection(keystorePass.toCharArray());
 
-		final SecretKeyFactory factory = SecretKeyFactory.getInstance("PBE");
+		if (!ks.entryInstanceOf(alias, entryType)) {
+			throw new KeyStoreException("Entry is not the correct type.");
+		}
 
-		final KeyStore.SecretKeyEntry secretKeyEntry = (KeyStore.SecretKeyEntry) ks.getEntry(alias, entryPassword);
-
-		final PBEKeySpec keySpec = (PBEKeySpec) factory.getKeySpec(secretKeyEntry.getSecretKey(), PBEKeySpec.class);
-
-		return new String(keySpec.getPassword());
+		return entryType.cast(ks.getEntry(alias, entryPassword));
 	}
 
 	@Override

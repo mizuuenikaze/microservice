@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ public interface ServiceConstants {
 	interface CacheNames {
 		public static final String userCache = "ehOauthUserCache";
 		public static final String paymentApiTokenCache = "ehPaymentApiTokenCache";
+		public static final String externalTokenCache = "ehExternalTokenCache";
 	}
 
 	interface PaymentState {
@@ -58,5 +59,11 @@ public interface ServiceConstants {
 	interface PaymentMethods {
 		public static final String paypalExpress = "paypal-express";
 		public static final String stripe = "stripe";
+	}
+
+	interface SimpleStates {
+		public static final Integer pending = 0;
+		public static final Integer success = 1;
+		public static final Integer error = 2;
 	}
 }

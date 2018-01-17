@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -34,8 +34,7 @@ import com.muk.services.exchange.ServiceConstants;
 
 /**
  *
- * Determines the activemq queue to route too. Puts the event id in the header
- * for idempotent consumer.
+ * Determines the activemq queue to route to. Puts the event id in the header for idempotent consumer.
  *
  */
 public class CsvQueueDemultiplexerImpl implements QueueDemultiplexer {
@@ -48,6 +47,7 @@ public class CsvQueueDemultiplexerImpl implements QueueDemultiplexer {
 	@Override
 	public void routeToQueue(Exchange exchange) {
 		String destination = "unknown";
+		@SuppressWarnings("unchecked")
 		final List<List<String>> data = (List<List<String>>) exchange.getIn().getBody();
 
 		if (data.size() > 1) {

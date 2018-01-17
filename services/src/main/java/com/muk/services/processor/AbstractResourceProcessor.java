@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright (C)  2018  mizuuenikaze inc
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *******************************************************************************/
 package com.muk.services.processor;
 
 import java.util.HashMap;
@@ -7,6 +23,8 @@ import javax.inject.Inject;
 
 import org.apache.camel.Exchange;
 import org.restlet.data.Status;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -17,6 +35,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public abstract class AbstractResourceProcessor<BodyType, ReturnType>
 		extends AbstractRestProcessor<BodyType, ReturnType> {
+	private static final Logger LOG = LoggerFactory.getLogger(AbstractResourceProcessor.class);
+
 	@Inject
 	private ObjectMapper jsonObjectMapper;
 
@@ -69,6 +89,10 @@ public abstract class AbstractResourceProcessor<BodyType, ReturnType>
 		} catch (final HttpClientErrorException httpClientEx) {
 			exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_CODE, httpClientEx.getStatusCode().value());
 			exchange.getOut().setHeader(Exchange.HTTP_RESPONSE_TEXT, httpClientEx.getMessage());
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug(httpClientEx.getResponseBodyAsString());
+			}
 		}
 
 		return response;

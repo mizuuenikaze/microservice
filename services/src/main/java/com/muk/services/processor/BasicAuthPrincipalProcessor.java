@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -36,10 +36,11 @@ public class BasicAuthPrincipalProcessor implements Processor {
 
 	@Override
 	public void process(Exchange exchange) throws Exception {
-		List<Header> httpHeaders = exchange.getIn().getHeader("org.restlet.http.headers", List.class);
+		@SuppressWarnings("unchecked")
+		final List<Header> httpHeaders = exchange.getIn().getHeader("org.restlet.http.headers", List.class);
 
 		String userpass = "bad:creds";
-		for (Header header : httpHeaders) {
+		for (final Header header : httpHeaders) {
 			if (header.getName().toLowerCase().equals(HttpHeaders.AUTHORIZATION.toLowerCase())) {
 				userpass = new String(
 						Base64.decodeBase64(
@@ -49,14 +50,15 @@ public class BasicAuthPrincipalProcessor implements Processor {
 			}
 		}
 
-		String[] tokens = userpass.split(":");
+		final String[] tokens = userpass.split(":");
 
 		// create an Authentication object
 		// build a new bearer token type
-		UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(tokens[0], tokens[1]);
+		final UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(tokens[0],
+				tokens[1]);
 
 		// wrap it in a Subject
-		Subject subject = new Subject();
+		final Subject subject = new Subject();
 		subject.getPrincipals().add(authToken);
 
 		// place the Subject in the In message

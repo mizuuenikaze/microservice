@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ package com.muk.services.exchange;
 public interface RestConstants {
 	interface Rest {
 		public static final String adminPath = "/api/admin";
+		public static final String apiVer = "/v1";
 		public static final String apiPath = "/api/v1";
 		public static final String anonymousToken = "anonymousToken";
 	}

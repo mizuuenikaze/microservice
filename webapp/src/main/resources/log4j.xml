@@ -59,7 +59,7 @@
 	</logger>
 
 	<logger name="org.apache.http.client">
-		<level value="ERRROR" />
+		<level value="ERROR" />
 	</logger>
 
 	<root>

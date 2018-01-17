@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -149,9 +149,7 @@ public class StandAloneEntry {
 
 			jettyServer.setHandler(contextHandler);
 
-			try
-
-			{
+			try {
 				jettyServer.start();
 				LOG.info("Jetty started on port: " + getHttpPort());
 				jettyServer.join();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -14,11 +14,41 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.muk.services.strategy;
+package com.muk.ext.core.json.model;
 
-import org.apache.camel.Exchange;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
-public interface HashValidatorStrategy {
-	void validateHash(Exchange exchange);
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
+@JsonInclude(Include.NON_NULL)
+public class CalendarEventTime {
+	private LocalDate date;
+	private OffsetDateTime dateTime;
+	private String timeZone;
+
+	public LocalDate getDate() {
+		return date;
+	}
+
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
+
+	public OffsetDateTime getDateTime() {
+		return dateTime;
+	}
+
+	public void setDateTime(OffsetDateTime dateTime) {
+		this.dateTime = dateTime;
+	}
+
+	public String getTimeZone() {
+		return timeZone;
+	}
+
+	public void setTimeZone(String timeZone) {
+		this.timeZone = timeZone;
+	}
 }

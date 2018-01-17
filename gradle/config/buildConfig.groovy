@@ -1,10 +1,3 @@
-binaryRepository {
-	url = 'http://aus02ndmms001.dev.volusion.com:8081/nexus/content/repositories'
-	username = 'deployment'
-	password = 'deployment123'
-	name = 'releases'
-}
-
 environments {
 	dev {
 		keystorefile = '/usr/local/share/keystore/appkeystore.jceks'
@@ -31,6 +24,7 @@ environments {
 				security {
 					app {
 						principals = 'dXNlcjpwYXNzd29yZA==,dW5rbm93bjpuYQ=='
+						primary = 'fernandocano@winduponthewater.com'
 					}
 					oauth {
 						clientId = 'mukapi'
@@ -39,6 +33,12 @@ environments {
 						userInfoPath = '/userinfo'
 						checkTokenPath = '/check_token'
 						//salt = 'don't set unless you know what you are doing'
+					}
+					xoauth {
+						calendar {
+							email = 'calendar-integration@scheduler-187602.iam.gserviceaccount.com'
+							alias = 'schedulercert'
+						}
 					}
 					paypal {
 						uri = 'https://api.sandbox.paypal.com/v1'
@@ -91,6 +91,7 @@ environments {
 				security {
 					app {
 						principals = 'dXNlcjpwYXNzd29yZA==,dW5rbm93bjpuYQ=='
+						primary = 'fernandocano@winduponthewater.com'
 					}
 					oauth {
 						clientId = 'mukapi'
@@ -99,6 +100,12 @@ environments {
 						userInfoPath = '/userinfo'
 						checkTokenPath = '/check_token'
 						//salt = 'don't set unless you know what you are doing'
+					}
+					xoauth {
+						calendar {
+							email = 'calendar-integration@scheduler-187602.iam.gserviceaccount.com'
+							alias = 'schedulercert'
+						}
 					}
 					paypal {
 						uri = 'https://api.paypal.com/v1'

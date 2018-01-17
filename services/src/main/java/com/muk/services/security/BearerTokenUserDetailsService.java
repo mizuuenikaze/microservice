@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -171,11 +171,9 @@ public class BearerTokenUserDetailsService implements CachingOauthUserDetailsSer
 			} catch (final HttpClientErrorException httpEx) {
 				response = new ResponseEntity<JsonNode>((JsonNode) null, httpEx.getStatusCode());
 
-				if (httpEx instanceof HttpStatusCodeException) {
-					if (LOG.isDebugEnabled()) {
-						LOG.debug("Status Code: {}", httpEx.getStatusCode().value());
-						LOG.debug("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
-					}
+				if (httpEx instanceof HttpStatusCodeException && LOG.isDebugEnabled()) {
+					LOG.debug("Status Code: {}", httpEx.getStatusCode().value());
+					LOG.debug("Server Message: {}", ((HttpStatusCodeException) httpEx).getResponseBodyAsString());
 				}
 			}
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import com.muk.services.strategy.TranslationStrategy;
 public class ImportTranslationFactoryStrategy implements TranslationFactoryStrategy {
 	private Map<String, TranslationStrategy<?, ?>> translationStrategyMap;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public TranslationStrategy<?, ?> findTranslationStrategy(String key) {
 		return translationStrategyMap.get(key);

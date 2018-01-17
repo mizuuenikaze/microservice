@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -22,24 +22,21 @@ import org.slf4j.LoggerFactory;
 
 import com.muk.services.api.QueueDemultiplexer;
 import com.muk.services.api.model.ExtendedEvent;
-import com.muk.services.exchange.NotificationEvent;
+import com.muk.services.exchange.CamelRouteConstants;
 import com.muk.services.exchange.ServiceConstants;
 
 /**
  *
- * Determines the activemq queue to route to for common events. Puts the event
- * id in the header for idempotent consumer.
+ * Determines the activemq queue to route to for common events. Puts the event id in the header for idempotent consumer.
  *
  */
 public abstract class AbstractQueueDemultiplexer implements QueueDemultiplexer {
 	private static final Logger LOG = LoggerFactory.getLogger(AbstractQueueDemultiplexer.class);
 
-
 	@Override
 	public void routeToQueue(Exchange exchange) {
 		String destination = "unknown";
 		final ExtendedEvent event = exchange.getIn().getBody(ExtendedEvent.class);
-
 
 		final String[] eventSplit = event.getTenantId().split("\\.");
 
@@ -69,8 +66,8 @@ public abstract class AbstractQueueDemultiplexer implements QueueDemultiplexer {
 			destination = determineEventDestination(eventSplit, event);
 		}
 
-		exchange.getIn().setHeader(NotificationEvent.Keys.queueDestination, destination);
-		exchange.getIn().setHeader(NotificationEvent.Keys.mukEventId, event.getId());
+		exchange.getIn().setHeader(CamelRouteConstants.MessageHeaders.queueDestination, destination);
+		exchange.getIn().setHeader(CamelRouteConstants.MessageHeaders.mukEventId, event.getId());
 	}
 
 	protected abstract String determineEventDestination(String[] eventParts, ExtendedEvent event);

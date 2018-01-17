@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -29,6 +29,9 @@ public interface SecurityConfigurationService {
 	static final String STRIPE_URI = "stripe.uri";
 	static final String COUCHDB_URI = "couchdb.uri";
 	static final String OAUTH_SALT = "oauth.salt";
+	static final String CALENDAR_ACCOUNT = "xoauth.calendar.email";
+	static final String CALENDAR_ALIAS = "xoauth.calendar.alias";
+	static final String PRIMARY_EMAIL = "app.primary";
 
 	String getOauthServer();
 
@@ -51,4 +54,10 @@ public interface SecurityConfigurationService {
 	String getCouchDbUri();
 
 	String getSalt();
+
+	String getCalendarAccount();
+
+	String getCalendarAlias();
+
+	String getPrimaryEmail();
 }

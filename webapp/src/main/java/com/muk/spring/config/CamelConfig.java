@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -40,7 +40,10 @@ import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
 
 import com.muk.restlet.CustomRestletBinding;
+import com.muk.services.exchange.ActionHandlerComponent;
+import com.muk.services.facades.ActionApiFacade;
 import com.muk.services.facades.PaymentFacade;
+import com.muk.services.facades.impl.DefaultActionApiFacade;
 import com.muk.services.facades.impl.DefaultPaymentFacade;
 
 @Configuration
@@ -83,10 +86,20 @@ public class CamelConfig extends MultiRouteCamelConfiguration {
 		return router;
 	}
 
+	@Bean
+	public org.apache.camel.Component processorEndpointComponent() {
+		return new ActionHandlerComponent();
+	}
+
 	/* facades */
 	@Bean
 	public PaymentFacade paymentFacade() {
 		return new DefaultPaymentFacade();
+	}
+
+	@Bean
+	public ActionApiFacade actionApiFacade() {
+		return new DefaultActionApiFacade();
 	}
 
 	/* framework components */

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -31,13 +31,11 @@ public class Main extends MainSupport {
 
 	@Override
 	protected ProducerTemplate findOrCreateCamelTemplate() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	protected Map<String, CamelContext> getCamelContextMap() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

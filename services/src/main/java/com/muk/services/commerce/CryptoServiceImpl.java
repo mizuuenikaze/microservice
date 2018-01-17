@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -20,7 +20,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.spec.AlgorithmParameterSpec;
 
 import javax.annotation.PostConstruct;
@@ -140,5 +143,27 @@ public class CryptoServiceImpl implements CryptoService {
 		} catch (final NoSuchPaddingException padEx) {
 			LOG.error("Failed to get cipher.", padEx);
 		}
+	}
+
+	@Override
+	public String signature(String algorithm, String payload, PrivateKey privateKey) {
+		Signature signator;
+		String signedPayload = "Failed";
+
+		try {
+			signator = Signature.getInstance(algorithm);
+			signator.initSign(privateKey);
+			signator.update(payload.getBytes(StandardCharsets.UTF_8));
+			signedPayload = encodeUrlSafe(signator.sign());
+		} catch (final SignatureException sigEx) {
+			LOG.error("Failed to sign payload.", sigEx);
+		} catch (final InvalidKeyException keyEx) {
+			LOG.error("Failed initialize with private key.", keyEx);
+		} catch (final NoSuchAlgorithmException algEx) {
+			LOG.error("Failed getting signature.", algEx);
+		}
+
+		return signedPayload;
+
 	}
 }

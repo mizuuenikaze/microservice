@@ -1,3 +1,19 @@
+/*******************************************************************************
+ * Copyright (C)  2018  mizuuenikaze inc
+ *
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ *
+ *     This program is distributed in the hope that it will be useful,
+ *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *     GNU General Public License for more details.
+ *
+ *     You should have received a copy of the GNU General Public License
+ *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *******************************************************************************/
 package com.muk.services.processor.api;
 
 import java.time.OffsetDateTime;
@@ -11,10 +27,10 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.apache.camel.Exchange;
+import org.apache.camel.http.common.HttpMethods;
 import org.restlet.data.Status;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -99,13 +115,13 @@ public class OauthLoginProcessor extends AbstractRestProcessor<OauthLoginRequest
 					final List<HateoasLink> links = new ArrayList<HateoasLink>();
 					HateoasLink link = new HateoasLink();
 					link.setRel("confirm");
-					link.setMethod(HttpMethod.GET.name());
+					link.setMethod(HttpMethods.GET.name());
 					link.setHref(hrefConfirmBuilder.build().toUriString());
 					links.add(link);
 
 					link = new HateoasLink();
 					link.setRel("deny");
-					link.setMethod(HttpMethod.GET.name());
+					link.setMethod(HttpMethods.GET.name());
 					link.setHref(hrefDenyBuilder.build().toUriString());
 					links.add(link);
 

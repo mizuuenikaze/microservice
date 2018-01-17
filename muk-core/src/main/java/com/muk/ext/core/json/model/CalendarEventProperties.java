@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -14,12 +14,32 @@
  *     You should have received a copy of the GNU General Public License
  *     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package com.muk.services.api;
+package com.muk.ext.core.json.model;
 
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
-import net.thisptr.jackson.jq.JsonQuery;
+@JsonInclude(Include.NON_NULL)
+public class CalendarEventProperties {
+	@JsonProperty("private")
+	private JsonNode privated;
+	private JsonNode shared;
 
-public interface CmsService {
-	Map<String, Object> fetchDocById(String db, String docId, JsonQuery jq);
+	public JsonNode getPrivated() {
+		return privated;
+	}
+
+	public void setPrivated(JsonNode privated) {
+		this.privated = privated;
+	}
+
+	public JsonNode getShared() {
+		return shared;
+	}
+
+	public void setShared(JsonNode shared) {
+		this.shared = shared;
+	}
 }

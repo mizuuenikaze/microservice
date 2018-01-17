@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (C)  2017  mizuuenikaze inc
+ * Copyright (C)  2018  mizuuenikaze inc
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
@@ -66,10 +66,11 @@ import com.muk.ext.security.impl.DefaultNonceService;
 import com.muk.services.api.BarcodeService;
 import com.muk.services.api.BlogService;
 import com.muk.services.api.CachingOauthUserDetailsService;
-import com.muk.services.api.CmsService;
 import com.muk.services.api.ConfigurationService;
 import com.muk.services.api.CryptoService;
 import com.muk.services.api.CsvImportService;
+import com.muk.services.api.DocService;
+import com.muk.services.api.ExternalOauthService;
 import com.muk.services.api.PaymentService;
 import com.muk.services.api.ProjectConfigurator;
 import com.muk.services.api.QueueDemultiplexer;
@@ -94,6 +95,7 @@ import com.muk.services.processor.NopProcessor;
 import com.muk.services.processor.QueueDemultiplexerImpl;
 import com.muk.services.processor.RouteActionProcessor;
 import com.muk.services.processor.StatusHandlerImpl;
+import com.muk.services.processor.api.AppointmentApiProcessor;
 import com.muk.services.processor.api.BlogApiProcessor;
 import com.muk.services.processor.api.BlogDocApiProcessor;
 import com.muk.services.processor.api.CmsApiProcessor;
@@ -101,13 +103,17 @@ import com.muk.services.processor.api.IntentApiProcessor;
 import com.muk.services.processor.api.OauthLoginProcessor;
 import com.muk.services.processor.api.PaymentApiProcessor;
 import com.muk.services.processor.api.PingApiProcessor;
+import com.muk.services.processor.api.TaskApiProcessor;
 import com.muk.services.security.BearerTokenUserDetailsService;
 import com.muk.services.security.DefaultUaaLoginService;
 import com.muk.services.security.EhCacheBasedTokenCache;
+import com.muk.services.strategy.ActionStrategy;
 import com.muk.services.strategy.TranslationFactoryStrategy;
 import com.muk.services.strategy.TranslationStrategy;
 import com.muk.services.strategy.impl.PassThroughTranslationStrategy;
+import com.muk.services.strategy.impl.SchedulerService;
 import com.muk.services.util.BarcodeServiceImpl;
+import com.muk.services.util.GoogleOAuthService;
 import com.muk.services.web.client.DefaultKeepAliveStrategy;
 import com.muk.services.web.client.DefaultRequestInterceptor;
 import com.muk.services.web.client.IdleConnectionMonitor;
@@ -144,6 +150,9 @@ public class ServiceConfig {
 		svc.setCouchDbUri(environment.getProperty(SecurityConfigurationService.COUCHDB_URI));
 		svc.setSalt(
 				environment.getProperty(SecurityConfigurationService.OAUTH_SALT, "12343&DEFAULT**<>\\{88*)SALT?><"));
+		svc.setCalendarAccount(environment.getProperty(SecurityConfigurationService.CALENDAR_ACCOUNT));
+		svc.setCalendarAlias(environment.getProperty(SecurityConfigurationService.CALENDAR_ALIAS));
+		svc.setPrimaryEmail(environment.getProperty(SecurityConfigurationService.PRIMARY_EMAIL));
 		return svc;
 	}
 
@@ -260,6 +269,16 @@ public class ServiceConfig {
 		return new PaymentApiProcessor();
 	}
 
+	@Bean
+	public Processor appointmentApiProcessor() {
+		return new AppointmentApiProcessor();
+	}
+
+	@Bean
+	public Processor taskApiProcessor() {
+		return new TaskApiProcessor();
+	}
+
 	/* Strategies */
 
 	@Bean(name = { "translationFactoryStrategy" })
@@ -290,6 +309,11 @@ public class ServiceConfig {
 		return translationFactoryStrategy;
 	}
 
+	@Bean
+	public ActionStrategy schedulerService() {
+		return new SchedulerService();
+	}
+
 	/* Services */
 
 	@Bean(name = { "mukCsvImportService" })
@@ -309,7 +333,7 @@ public class ServiceConfig {
 		return nonceService;
 	}
 
-	@Bean(name = { "cryptoService" })
+	@Bean
 	public CryptoService cryptoService() {
 		return new CryptoServiceImpl();
 	}
@@ -345,13 +369,18 @@ public class ServiceConfig {
 	}
 
 	@Bean
-	public CmsService cmsService() {
+	public DocService docService() {
 		return new CouchDbCmsService();
 	}
 
 	@Bean
 	public BlogService blogService() {
 		return new CouchDbBlogService();
+	}
+
+	@Bean
+	public ExternalOauthService googleOauthService() {
+		return new GoogleOAuthService();
 	}
 
 	/* Rest Client setup */
